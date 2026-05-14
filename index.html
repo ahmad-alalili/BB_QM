@@ -1,0 +1,2232 @@
+<!DOCTYPE html>
+<!--
+================================================================
+  Blackboard Questions Generator
+  Developed by: Eng. Ahmed Saeed Al-Alili
+  © 2026 All Rights Reserved
+================================================================
+-->
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex, nofollow, noarchive, nosnippet, noimageindex">
+<meta name="googlebot" content="noindex, nofollow">
+<meta name="referrer" content="no-referrer">
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+<meta http-equiv="Pragma" content="no-cache">
+<meta http-equiv="Expires" content="0">
+<title>منشئ أسئلة بلاك بورد</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&family=Cairo:wght@400;600;700;900&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+<style>
+  :root {
+    --bg: #f4f1ea;
+    --surface: #ffffff;
+    --ink: #1a1a1a;
+    --ink-soft: #555;
+    --line: #e0dccf;
+    --accent: #0f7359;
+    --accent-soft: #d9ebe2;
+    --warning: #c2410c;
+    --danger: #b91c1c;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  
+  body {
+    user-select: none;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+  }
+  textarea, input, .prompt-box, .preview, [contenteditable="true"] {
+    user-select: text !important;
+    -webkit-user-select: text !important;
+  }
+
+  body {
+    font-family: 'Helvetica Neue', 'Helvetica', 'IBM Plex Sans Arabic', 'Cairo', Arial, sans-serif;
+    background: var(--bg);
+    color: var(--ink);
+    min-height: 100vh;
+    padding: 20px;
+    background-image:
+      radial-gradient(circle at 10% 0%, rgba(15,115,89,0.04) 0%, transparent 40%),
+      radial-gradient(circle at 90% 100%, rgba(194,65,12,0.03) 0%, transparent 40%);
+  }
+  .container { max-width: 1100px; margin: 0 auto; }
+  header {
+    text-align: center;
+    padding: 30px 20px 40px;
+    border-bottom: 2px solid var(--ink);
+    margin-bottom: 40px;
+  }
+  header::before {
+    content: '📝';
+    font-size: 48px;
+    display: block;
+    margin-bottom: 10px;
+  }
+  h1 {
+    font-family: 'Helvetica Neue', 'Helvetica', 'IBM Plex Sans Arabic', 'Cairo', Arial, sans-serif;
+    font-size: clamp(28px, 4vw, 42px);
+    font-weight: 700;
+    letter-spacing: -0.5px;
+  }
+  .subtitle {
+    color: var(--ink-soft);
+    margin-top: 8px;
+    font-size: 15px;
+  }
+  .grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 30px;
+  }
+  @media (max-width: 850px) {
+    .grid { grid-template-columns: 1fr; }
+  }
+  @media (max-width: 600px) {
+    body { padding: 10px; }
+    .card { padding: 18px; box-shadow: 4px 4px 0 var(--ink); }
+    .type-row {
+      grid-template-columns: 1fr 90px;
+      padding: 12px;
+    }
+    .type-row input[type="number"] {
+      height: 46px;
+      font-size: 16px;
+    }
+    .diff-count {
+      height: 46px;
+      font-size: 16px;
+    }
+    .matrix-cell {
+      height: 44px;
+      min-width: 45px;
+      font-size: 15px;
+    }
+    .matrix th, .matrix td {
+      padding: 4px 2px;
+    }
+    .matrix tbody th {
+      font-size: 11px;
+      padding-right: 4px;
+    }
+    .matrix thead th {
+      font-size: 10px;
+    }
+  }
+  .card {
+    background: var(--surface);
+    border: 2px solid var(--ink);
+    border-radius: 12px;
+    padding: 24px;
+    box-shadow: 6px 6px 0 var(--ink);
+    transition: transform 0.2s;
+  }
+  .card:hover { transform: translate(-2px, -2px); box-shadow: 8px 8px 0 var(--ink); }
+  .step-badge {
+    display: inline-block;
+    background: var(--ink);
+    color: var(--bg);
+    padding: 4px 14px;
+    border-radius: 20px;
+    font-size: 13px;
+    font-weight: 700;
+    margin-bottom: 12px;
+    font-family: 'Helvetica Neue', 'Helvetica', 'IBM Plex Sans Arabic', 'Cairo', Arial, sans-serif;
+  }
+  .card h2 {
+    font-family: 'Helvetica Neue', 'Helvetica', 'IBM Plex Sans Arabic', 'Cairo', Arial, sans-serif;
+    font-size: 22px;
+    margin-bottom: 6px;
+  }
+  .card-desc {
+    color: var(--ink-soft);
+    font-size: 14px;
+    margin-bottom: 18px;
+    line-height: 1.6;
+  }
+  label {
+    display: block;
+    font-weight: 700;
+    margin-bottom: 6px;
+    font-size: 14px;
+  }
+  textarea, input[type="number"] {
+    width: 100%;
+    padding: 12px;
+    border: 2px solid var(--line);
+    border-radius: 8px;
+    font-family: inherit;
+    font-size: 14px;
+    background: var(--bg);
+    transition: border-color 0.2s;
+    direction: rtl;
+  }
+  textarea:focus, input[type="number"]:focus {
+    outline: none;
+    border-color: var(--accent);
+    background: white;
+  }
+  textarea {
+    resize: vertical;
+    min-height: 130px;
+    line-height: 1.7;
+  }
+  .hint {
+    background: #fef9e7;
+    border: 1px solid #f4d03f;
+    border-radius: 6px;
+    padding: 10px 12px;
+    font-size: 12px;
+    color: #7d6608;
+    margin-top: 8px;
+    line-height: 1.6;
+  }
+  
+  .editor-mode {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+    margin: 16px 0;
+    padding: 4px;
+    background: var(--bg);
+    border: 2px solid var(--ink);
+    border-radius: 10px;
+  }
+  .editor-mode-btn {
+    padding: 12px 8px;
+    background: transparent;
+    border: 2px solid transparent;
+    border-radius: 8px;
+    cursor: pointer;
+    font-family: inherit;
+    transition: all 0.2s;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2px;
+  }
+  .editor-mode-btn span {
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--ink-soft);
+  }
+  .editor-mode-btn small {
+    font-size: 10px;
+    color: var(--ink-soft);
+    opacity: 0.8;
+  }
+  .editor-mode-btn:hover {
+    background: white;
+  }
+  .editor-mode-btn.active {
+    background: var(--ink);
+  }
+  .editor-mode-btn.active span,
+  .editor-mode-btn.active small {
+    color: white;
+  }
+  .advanced-intro {
+    background: linear-gradient(135deg, var(--accent-soft) 0%, #fef9e7 100%);
+    border: 2px solid var(--accent);
+    border-radius: 10px;
+    padding: 14px;
+    margin-bottom: 14px;
+  }
+  .advanced-intro h3 {
+    font-family: 'Helvetica Neue', 'Helvetica', 'IBM Plex Sans Arabic', 'Cairo', Arial, sans-serif;
+    font-size: 16px;
+    color: var(--accent);
+    margin-bottom: 4px;
+  }
+  .advanced-intro p {
+    font-size: 12px;
+    color: var(--ink-soft);
+    line-height: 1.6;
+  }
+  
+  .types-section {
+    background: var(--bg);
+    border: 2px solid var(--line);
+    border-radius: 10px;
+    padding: 14px;
+    margin: 16px 0;
+  }
+  .types-section h3 {
+    font-size: 14px;
+    margin-bottom: 12px;
+    font-family: 'Helvetica Neue', 'Helvetica', 'IBM Plex Sans Arabic', 'Cairo', Arial, sans-serif;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .total-badge {
+    background: var(--accent);
+    color: white;
+    padding: 3px 12px;
+    border-radius: 12px;
+    font-size: 12px;
+    font-weight: 700;
+  }
+  .type-row {
+    display: grid;
+    grid-template-columns: 1fr 100px;
+    gap: 10px;
+    align-items: center;
+    margin-bottom: 8px;
+    padding: 10px 12px;
+    background: white;
+    border-radius: 6px;
+    border: 1px solid var(--line);
+    transition: all 0.15s;
+  }
+  .type-row:hover {
+    border-color: var(--accent);
+  }
+  .type-row.active {
+    border-color: var(--accent);
+    background: var(--accent-soft);
+  }
+  .type-label {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 13px;
+    font-weight: 500;
+  }
+  .type-label .emoji {
+    font-size: 16px;
+  }
+  .type-row input[type="number"] {
+    padding: 10px 8px;
+    width: 100%;
+    height: 42px;
+    text-align: center;
+    font-weight: 700;
+    font-size: 15px;
+    border: 1.5px solid var(--line);
+    border-radius: 6px;
+    -moz-appearance: textfield;
+  }
+  .type-row input[type="number"]::-webkit-outer-spin-button,
+  .type-row input[type="number"]::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+  }
+  .type-row input[type="number"]:focus {
+    outline: none;
+    border-color: var(--accent);
+    background: white;
+  }
+  .type-row input[type="number"]:disabled {
+    background: #f5f5f5;
+    color: #aaa;
+  }
+  .type-row input[type="number"]::placeholder,
+  .diff-count::placeholder,
+  .matrix-cell::placeholder {
+    color: #c5c0b3;
+    opacity: 1;
+    font-weight: 400;
+  }
+  
+  .options-section {
+    background: var(--bg);
+    border: 2px solid var(--line);
+    border-radius: 10px;
+    padding: 14px;
+    margin: 16px 0;
+  }
+  .options-section h3 {
+    font-size: 14px;
+    margin-bottom: 10px;
+    font-family: 'Helvetica Neue', 'Helvetica', 'IBM Plex Sans Arabic', 'Cairo', Arial, sans-serif;
+  }
+  .switch-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 8px 0;
+    border-bottom: 1px solid var(--line);
+  }
+  .switch-row:last-child { border-bottom: none; }
+  .switch-label {
+    font-size: 13px;
+    font-weight: 500;
+    flex: 1;
+  }
+  .switch-desc {
+    font-size: 11px;
+    color: var(--ink-soft);
+    display: block;
+    margin-top: 2px;
+    font-weight: 400;
+  }
+  
+  .switch {
+    position: relative;
+    display: inline-block;
+    width: 44px;
+    height: 24px;
+    flex-shrink: 0;
+  }
+  .switch input { opacity: 0; width: 0; height: 0; }
+  .slider {
+    position: absolute;
+    cursor: pointer;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background-color: #ccc;
+    transition: 0.3s;
+    border-radius: 24px;
+  }
+  .slider:before {
+    position: absolute;
+    content: "";
+    height: 18px;
+    width: 18px;
+    left: 3px;
+    bottom: 3px;
+    background-color: white;
+    transition: 0.3s;
+    border-radius: 50%;
+  }
+  input:checked + .slider { background-color: var(--accent); }
+  input:checked + .slider:before { transform: translateX(20px); }
+
+  
+  .difficulty-section {
+    background: var(--bg);
+    border: 2px solid var(--line);
+    border-radius: 10px;
+    padding: 14px;
+    margin: 16px 0;
+  }
+  .difficulty-section h3 {
+    font-size: 14px;
+    margin-bottom: 12px;
+    font-family: 'Helvetica Neue', 'Helvetica', 'IBM Plex Sans Arabic', 'Cairo', Arial, sans-serif;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .diff-total {
+    background: var(--warning);
+    color: white;
+    padding: 3px 10px;
+    border-radius: 12px;
+    font-size: 11px;
+    font-weight: 700;
+    display: none;
+  }
+  .diff-total.show { display: inline-block; }
+  .diff-total.mismatch { background: var(--danger); }
+  .diff-mode {
+    display: flex;
+    gap: 6px;
+    margin-bottom: 14px;
+    background: white;
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    padding: 4px;
+  }
+  .diff-mode-btn {
+    flex: 1;
+    text-align: center;
+    padding: 8px 4px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 12px;
+    font-weight: 500;
+    transition: all 0.15s;
+  }
+  .diff-mode-btn:hover { background: var(--bg); }
+  .diff-mode-btn.active {
+    background: var(--ink);
+    color: white;
+    font-weight: 700;
+  }
+  .diff-mode-btn input { display: none; }
+  .diff-panel { padding: 4px; }
+  .diff-hint {
+    font-size: 12px;
+    color: var(--ink-soft);
+    margin-bottom: 10px;
+  }
+  
+  .diff-slider-wrap {
+    padding: 10px 6px;
+    background: white;
+    border-radius: 8px;
+    border: 1px solid var(--line);
+  }
+  .diff-slider {
+    width: 100%;
+    height: 8px;
+    border-radius: 4px;
+    appearance: none;
+    background: linear-gradient(to right, #22c55e, #eab308, #f97316, #dc2626);
+    outline: none;
+    direction: ltr;
+  }
+  .diff-slider::-webkit-slider-thumb {
+    appearance: none;
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    background: var(--ink);
+    cursor: pointer;
+    border: 3px solid white;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+  }
+  .diff-slider::-moz-range-thumb {
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    background: var(--ink);
+    cursor: pointer;
+    border: 3px solid white;
+  }
+  .diff-labels {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 8px;
+    font-size: 10px;
+    color: var(--ink-soft);
+    direction: ltr;
+  }
+  .diff-current {
+    text-align: center;
+    margin-top: 12px;
+    padding: 6px;
+    background: var(--accent-soft);
+    color: var(--accent);
+    border-radius: 6px;
+    font-weight: 700;
+    font-size: 13px;
+  }
+  
+  .diff-row {
+    display: grid;
+    grid-template-columns: 30px 1fr 80px;
+    align-items: center;
+    gap: 10px;
+    padding: 8px;
+    background: white;
+    border-radius: 6px;
+    border: 1px solid var(--line);
+    margin-bottom: 6px;
+  }
+  .diff-emoji { font-size: 16px; text-align: center; }
+  .diff-name { font-size: 13px; }
+  .diff-count {
+    width: 100%;
+    height: 42px;
+    padding: 8px;
+    border: 1.5px solid var(--line);
+    border-radius: 6px;
+    text-align: center;
+    font-weight: 700;
+    font-size: 15px;
+    -moz-appearance: textfield;
+  }
+  .diff-count::-webkit-outer-spin-button,
+  .diff-count::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+  }
+  .diff-count:focus {
+    outline: none;
+    border-color: var(--accent);
+  }
+  
+  .prog-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 8px;
+    padding: 8px;
+    background: white;
+    border-radius: 6px;
+    border: 1px solid var(--line);
+  }
+  .prog-row label {
+    margin: 0;
+    font-size: 13px;
+    min-width: 70px;
+  }
+  .prog-row select {
+    flex: 1;
+    padding: 6px;
+    border: 1px solid var(--line);
+    border-radius: 4px;
+    font-family: inherit;
+    font-size: 13px;
+    background: white;
+  }
+  .prog-note {
+    font-size: 11px;
+    color: var(--warning);
+    background: #fef3c7;
+    padding: 8px;
+    border-radius: 6px;
+    margin-top: 8px;
+  }
+  
+  .matrix-wrap {
+    background: white;
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    padding: 8px;
+    overflow-x: auto;
+  }
+  .matrix {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 12px;
+  }
+  .matrix th, .matrix td {
+    padding: 6px 4px;
+    text-align: center;
+    border: 1px solid var(--line);
+  }
+  .matrix thead th {
+    background: var(--bg);
+    font-size: 11px;
+    line-height: 1.3;
+    font-weight: 700;
+  }
+  .matrix tbody th {
+    text-align: right;
+    background: var(--bg);
+    font-weight: 600;
+    font-size: 12px;
+    padding-right: 8px;
+    white-space: nowrap;
+  }
+  .matrix-cell {
+    width: 100%;
+    min-width: 50px;
+    height: 38px;
+    padding: 6px 4px;
+    text-align: center;
+    border: 1.5px solid var(--line);
+    border-radius: 5px;
+    font-weight: 700;
+    font-size: 14px;
+    -moz-appearance: textfield;
+  }
+  .matrix-cell::-webkit-outer-spin-button,
+  .matrix-cell::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+  }
+  .matrix-cell:focus {
+    outline: 2px solid var(--accent);
+    border-color: transparent;
+  }
+  .row-sum, .col-sum {
+    background: var(--accent-soft);
+    color: var(--accent);
+    font-weight: 700;
+  }
+  .sum-col {
+    background: var(--ink) !important;
+    color: white !important;
+  }
+  .matrix tfoot th {
+    background: var(--ink);
+    color: white;
+  }
+  .matrix tfoot .col-sum {
+    background: var(--ink);
+    color: white;
+  }
+  .grand-sum {
+    background: var(--accent) !important;
+    color: white !important;
+    font-size: 14px !important;
+    font-weight: 900 !important;
+  }
+  .adv-note {
+    font-size: 11px;
+    color: var(--ink-soft);
+    background: var(--accent-soft);
+    padding: 8px;
+    border-radius: 6px;
+    margin-top: 10px;
+    text-align: center;
+  }
+  .types-section.disabled {
+    opacity: 0.4;
+    pointer-events: none;
+    position: relative;
+  }
+  .types-section.disabled::after {
+    content: '🎛️ معطّل في الوضع المتقدم';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: var(--ink);
+    color: white;
+    padding: 6px 14px;
+    border-radius: 6px;
+    font-size: 12px;
+    font-weight: 700;
+    pointer-events: auto;
+  }
+  
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .format-section {
+    background: var(--bg);
+    border: 2px solid var(--line);
+    border-radius: 10px;
+    padding: 14px;
+    margin: 16px 0;
+  }
+  .format-options {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+  .format-opt {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 12px;
+    background: white;
+    border: 2px solid var(--line);
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+  .format-opt:hover {
+    border-color: var(--accent);
+  }
+  .format-opt.active {
+    border-color: var(--accent);
+    background: var(--accent-soft);
+  }
+  .format-opt input { display: none; }
+  .format-info { flex: 1; }
+  .format-info strong {
+    display: block;
+    font-size: 13px;
+    margin-bottom: 2px;
+  }
+  .format-info span {
+    font-size: 11px;
+    color: var(--ink-soft);
+    line-height: 1.5;
+  }
+
+  .btn {
+    width: 100%;
+    padding: 14px;
+    border: 2px solid var(--ink);
+    border-radius: 8px;
+    background: var(--ink);
+    color: var(--bg);
+    font-family: inherit;
+    font-size: 15px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.15s;
+    margin-top: 12px;
+  }
+  .btn:hover {
+    background: var(--accent);
+    border-color: var(--accent);
+    transform: translateY(-2px);
+  }
+  .btn:active { transform: translateY(0); }
+  .btn-secondary {
+    background: white;
+    color: var(--ink);
+  }
+  .btn-secondary:hover {
+    background: var(--accent-soft);
+    color: var(--accent);
+  }
+  .prompt-box {
+    background: var(--bg);
+    border: 2px dashed var(--line);
+    border-radius: 8px;
+    padding: 16px;
+    font-family: 'Courier New', monospace;
+    font-size: 13px;
+    line-height: 1.7;
+    max-height: 250px;
+    overflow-y: auto;
+    white-space: pre-wrap;
+    direction: rtl;
+    text-align: right;
+  }
+  .prompt-box.empty {
+    color: var(--ink-soft);
+    font-style: italic;
+    text-align: center;
+    padding: 30px;
+  }
+  .status {
+    margin-top: 14px;
+    padding: 10px 14px;
+    border-radius: 8px;
+    font-size: 13px;
+    font-weight: 500;
+    display: none;
+  }
+  .status.show { display: block; }
+  .status.success {
+    background: var(--accent-soft);
+    color: var(--accent);
+    border: 1px solid var(--accent);
+  }
+  .status.error {
+    background: #fee2e2;
+    color: var(--danger);
+    border: 1px solid var(--danger);
+  }
+  .preview {
+    margin-top: 20px;
+    background: var(--bg);
+    border: 2px solid var(--line);
+    border-radius: 8px;
+    padding: 14px;
+    max-height: 200px;
+    overflow-y: auto;
+    font-size: 12px;
+    font-family: 'Courier New', monospace;
+    direction: ltr;
+    text-align: left;
+    display: none;
+  }
+  .preview.show { display: block; }
+  .preview-line {
+    padding: 4px 0;
+    border-bottom: 1px solid var(--line);
+  }
+  .preview-line:last-child { border-bottom: none; }
+  .type-badge {
+    display: inline-block;
+    background: var(--accent);
+    color: white;
+    padding: 1px 6px;
+    border-radius: 3px;
+    font-size: 10px;
+    margin-left: 6px;
+    font-weight: 700;
+  }
+  .instructions {
+    margin-top: 50px;
+    padding: 24px;
+    background: var(--surface);
+    border: 2px solid var(--ink);
+    border-radius: 12px;
+  }
+  .instructions h3 {
+    font-family: 'Helvetica Neue', 'Helvetica', 'IBM Plex Sans Arabic', 'Cairo', Arial, sans-serif;
+    font-size: 20px;
+    margin-bottom: 14px;
+  }
+  .instructions ol {
+    padding-right: 20px;
+    line-height: 2;
+  }
+  .instructions li { margin-bottom: 4px; }
+  .instructions code {
+    background: var(--bg);
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-size: 13px;
+    border: 1px solid var(--line);
+  }
+  footer {
+    text-align: center;
+    padding: 30px 0;
+    color: var(--ink-soft);
+    font-size: 13px;
+  }
+  footer .signature {
+    margin-top: 12px;
+    padding-top: 14px;
+    border-top: 1px solid var(--line);
+    font-size: 13px;
+    color: var(--ink);
+    letter-spacing: 0.3px;
+  }
+  footer .signature strong {
+    color: var(--accent);
+    font-weight: 700;
+  }
+  .stats {
+    display: flex;
+    gap: 16px;
+    margin-top: 12px;
+    flex-wrap: wrap;
+  }
+  .stat {
+    flex: 1;
+    min-width: 80px;
+    text-align: center;
+    padding: 10px;
+    background: var(--bg);
+    border-radius: 8px;
+    border: 1px solid var(--line);
+  }
+  .stat-num {
+    font-size: 22px;
+    font-weight: 900;
+    color: var(--accent);
+    font-family: 'Helvetica Neue', 'Helvetica', 'IBM Plex Sans Arabic', 'Cairo', Arial, sans-serif;
+  }
+  .stat-label {
+    font-size: 11px;
+    color: var(--ink-soft);
+  }
+</style>
+</head>
+<body>
+
+<div class="container">
+
+<header>
+  <h1>منشئ أسئلة بلاك بورد</h1>
+  <p class="subtitle">حوّل المحتوى إلى أسئلة جاهزة للرفع — بتحكم كامل في الأنواع والترتيب</p>
+</header>
+
+<div class="grid">
+
+  
+  <div class="card">
+    <span class="step-badge">الخطوة ١</span>
+    <h2>أنشئ البرومبت</h2>
+    <p class="card-desc">ألصق المحتوى، حدد عدد كل نوع سؤال، ثم انسخ البرومبت لإرساله إلى ChatGPT أو Gemini أو Claude</p>
+
+    <label for="content">المحتوى (نص، فصل، مقال)</label>
+    <textarea id="content" placeholder="ألصق هنا المحتوى المراد إنشاء أسئلة منه...
+
+💡 يمكنك أيضاً إضافة في بداية النص أي ملاحظات مثل:
+- اسم المقرر: مثلاً 'مقرر: ريادة الأعمال'
+- الوحدات: 'الوحدة الأولى: المفاهيم الأساسية'
+- ملاحظات خاصة: 'ركّز على التعريفات' أو 'أضف أسئلة عن الأمثلة العملية'
+- أنواع أسئلة غير متوفرة: 'أضف أسئلة مطابقة' أو 'أسئلة ترتيب'"></textarea>
+
+    <div class="hint">
+      💡 <strong>نصيحة:</strong> اكتب أي ملاحظات شخصية ضمن المحتوى نفسه (اسم المقرر، الوحدات، ملاحظات خاصة) — الأداة سترسلها للذكاء الاصطناعي ضمن البرومبت.
+    </div>
+
+    
+    <div class="editor-mode">
+      <button type="button" class="editor-mode-btn active" data-editor="simple">
+        <span>📋 وضع بسيط</span>
+        <small>أنواع وصعوبات منفصلة</small>
+      </button>
+      <button type="button" class="editor-mode-btn" data-editor="advanced">
+        <span>🎛️ وضع متقدم</span>
+        <small>مصفوفة كاملة (نوع × صعوبة)</small>
+      </button>
+    </div>
+
+    
+    <div id="simpleMode">
+      
+      <div class="types-section">
+        <h3>
+          <span>🎯 أنواع الأسئلة وعددها</span>
+          <span class="total-badge">المجموع: <span id="totalCount">8</span></span>
+        </h3>
+
+        <div class="type-row active" data-type="MC">
+          <div class="type-label">
+            <span class="emoji">🔤</span>
+            <span>اختيار من متعدد</span>
+          </div>
+          <input type="number" class="type-count" data-type="MC" value="5" min="0" max="50">
+        </div>
+
+        <div class="type-row active" data-type="TF">
+          <div class="type-label">
+            <span class="emoji">✓✗</span>
+            <span>صح / خطأ</span>
+          </div>
+          <input type="number" class="type-count" data-type="TF" value="3" min="0" max="50">
+        </div>
+
+        <div class="type-row" data-type="ESS">
+          <div class="type-label">
+            <span class="emoji">📝</span>
+            <span>مقالي</span>
+          </div>
+          <input type="number" class="type-count" data-type="ESS" placeholder="0" min="0" max="50">
+        </div>
+
+        <div class="type-row" data-type="FIB">
+          <div class="type-label">
+            <span class="emoji">🔲</span>
+            <span>ملء الفراغ</span>
+          </div>
+          <input type="number" class="type-count" data-type="FIB" placeholder="0" min="0" max="50">
+        </div>
+
+        <div class="type-row" data-type="NUM">
+          <div class="type-label">
+            <span class="emoji">🔢</span>
+            <span>إجابة رقمية / حسابي</span>
+          </div>
+          <input type="number" class="type-count" data-type="NUM" placeholder="0" min="0" max="50">
+        </div>
+
+        <div class="type-row" data-type="MAT">
+          <div class="type-label">
+            <span class="emoji">🔗</span>
+            <span>توصيل / مطابقة</span>
+          </div>
+          <input type="number" class="type-count" data-type="MAT" placeholder="0" min="0" max="50">
+        </div>
+      </div>
+
+      
+      <div class="difficulty-section">
+        <h3>
+          <span>🎚️ مستوى الصعوبة</span>
+          <span class="diff-total" id="diffTotal"></span>
+        </h3>
+
+        <div class="diff-mode">
+          <label class="diff-mode-btn active" data-mode="single">
+            <input type="radio" name="diffMode" value="single" checked>
+            <span>مستوى واحد</span>
+          </label>
+          <label class="diff-mode-btn" data-mode="mixed">
+            <input type="radio" name="diffMode" value="mixed">
+            <span>مزيج مخصص</span>
+          </label>
+          <label class="diff-mode-btn" data-mode="progressive">
+            <input type="radio" name="diffMode" value="progressive">
+            <span>تدرج تصاعدي</span>
+          </label>
+        </div>
+
+        
+        <div class="diff-panel" id="panelSingle">
+          <div class="diff-slider-wrap">
+            <input type="range" id="singleDiff" min="1" max="5" value="3" class="diff-slider">
+            <div class="diff-labels">
+              <span>سهل جداً</span>
+              <span>سهل</span>
+              <span>متوسط</span>
+              <span>صعب</span>
+              <span>صعب جداً</span>
+            </div>
+            <div class="diff-current" id="singleDiffLabel">متوسط (تطبيق)</div>
+          </div>
+        </div>
+
+        
+        <div class="diff-panel" id="panelMixed" style="display:none;">
+          <p class="diff-hint">حدد عدد الأسئلة لكل مستوى صعوبة:</p>
+          <div class="diff-row" data-level="easy">
+            <span class="diff-emoji">🟢</span>
+            <span class="diff-name">سهل (تذكر/فهم)</span>
+            <input type="number" class="diff-count" data-level="easy" placeholder="0" min="0">
+          </div>
+          <div class="diff-row" data-level="medium">
+            <span class="diff-emoji">🟡</span>
+            <span class="diff-name">متوسط (تطبيق)</span>
+            <input type="number" class="diff-count" data-level="medium" placeholder="0" min="0">
+          </div>
+          <div class="diff-row" data-level="hard">
+            <span class="diff-emoji">🟠</span>
+            <span class="diff-name">صعب (تحليل)</span>
+            <input type="number" class="diff-count" data-level="hard" placeholder="0" min="0">
+          </div>
+          <div class="diff-row" data-level="expert">
+            <span class="diff-emoji">🔴</span>
+            <span class="diff-name">صعب جداً (تقييم/إبداع)</span>
+            <input type="number" class="diff-count" data-level="expert" placeholder="0" min="0">
+          </div>
+        </div>
+
+        
+        <div class="diff-panel" id="panelProgressive" style="display:none;">
+          <p class="diff-hint">سترتب الأسئلة من الأسهل إلى الأصعب تلقائياً، حدد البداية والنهاية:</p>
+          <div class="prog-row">
+            <label>يبدأ من:</label>
+            <select id="progStart">
+              <option value="easy">🟢 سهل</option>
+              <option value="medium" selected>🟡 متوسط</option>
+              <option value="hard">🟠 صعب</option>
+            </select>
+          </div>
+          <div class="prog-row">
+            <label>ينتهي عند:</label>
+            <select id="progEnd">
+              <option value="medium">🟡 متوسط</option>
+              <option value="hard" selected>🟠 صعب</option>
+              <option value="expert">🔴 صعب جداً</option>
+            </select>
+          </div>
+          <div class="prog-note">
+            ⚠️ سيُلغى خيار "ترتيب الأسئلة عشوائياً" تلقائياً للحفاظ على التدرج
+          </div>
+        </div>
+      </div>
+    </div>
+
+    
+    <div id="advancedMode" style="display:none;">
+      <div class="advanced-intro">
+        <h3>🎛️ الوضع المتقدم</h3>
+        <p>تحكم كامل في كل تقاطع (نوع × صعوبة). المجاميع تُحسب تلقائياً.</p>
+      </div>
+
+      <div class="matrix-wrap">
+        <table class="matrix">
+          <thead>
+            <tr>
+              <th></th>
+              <th>🟢<br>سهل</th>
+              <th>🟡<br>متوسط</th>
+              <th>🟠<br>صعب</th>
+              <th>🔴<br>صعب جداً</th>
+              <th class="sum-col">المجموع</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr data-type="MC">
+              <th>🔤 اختيار من متعدد</th>
+              <td><input type="number" class="matrix-cell" data-type="MC" data-level="easy" placeholder="0" min="0"></td>
+              <td><input type="number" class="matrix-cell" data-type="MC" data-level="medium" placeholder="0" min="0"></td>
+              <td><input type="number" class="matrix-cell" data-type="MC" data-level="hard" placeholder="0" min="0"></td>
+              <td><input type="number" class="matrix-cell" data-type="MC" data-level="expert" placeholder="0" min="0"></td>
+              <td class="row-sum" data-type="MC">0</td>
+            </tr>
+            <tr data-type="TF">
+              <th>✓✗ صح/خطأ</th>
+              <td><input type="number" class="matrix-cell" data-type="TF" data-level="easy" placeholder="0" min="0"></td>
+              <td><input type="number" class="matrix-cell" data-type="TF" data-level="medium" placeholder="0" min="0"></td>
+              <td><input type="number" class="matrix-cell" data-type="TF" data-level="hard" placeholder="0" min="0"></td>
+              <td><input type="number" class="matrix-cell" data-type="TF" data-level="expert" placeholder="0" min="0"></td>
+              <td class="row-sum" data-type="TF">0</td>
+            </tr>
+            <tr data-type="ESS">
+              <th>📝 مقالي</th>
+              <td><input type="number" class="matrix-cell" data-type="ESS" data-level="easy" placeholder="0" min="0"></td>
+              <td><input type="number" class="matrix-cell" data-type="ESS" data-level="medium" placeholder="0" min="0"></td>
+              <td><input type="number" class="matrix-cell" data-type="ESS" data-level="hard" placeholder="0" min="0"></td>
+              <td><input type="number" class="matrix-cell" data-type="ESS" data-level="expert" placeholder="0" min="0"></td>
+              <td class="row-sum" data-type="ESS">0</td>
+            </tr>
+            <tr data-type="FIB">
+              <th>🔲 ملء الفراغ</th>
+              <td><input type="number" class="matrix-cell" data-type="FIB" data-level="easy" placeholder="0" min="0"></td>
+              <td><input type="number" class="matrix-cell" data-type="FIB" data-level="medium" placeholder="0" min="0"></td>
+              <td><input type="number" class="matrix-cell" data-type="FIB" data-level="hard" placeholder="0" min="0"></td>
+              <td><input type="number" class="matrix-cell" data-type="FIB" data-level="expert" placeholder="0" min="0"></td>
+              <td class="row-sum" data-type="FIB">0</td>
+            </tr>
+            <tr data-type="NUM">
+              <th>🔢 إجابة رقمية</th>
+              <td><input type="number" class="matrix-cell" data-type="NUM" data-level="easy" placeholder="0" min="0"></td>
+              <td><input type="number" class="matrix-cell" data-type="NUM" data-level="medium" placeholder="0" min="0"></td>
+              <td><input type="number" class="matrix-cell" data-type="NUM" data-level="hard" placeholder="0" min="0"></td>
+              <td><input type="number" class="matrix-cell" data-type="NUM" data-level="expert" placeholder="0" min="0"></td>
+              <td class="row-sum" data-type="NUM">0</td>
+            </tr>
+            <tr data-type="MAT">
+              <th>🔗 توصيل/مطابقة</th>
+              <td><input type="number" class="matrix-cell" data-type="MAT" data-level="easy" placeholder="0" min="0"></td>
+              <td><input type="number" class="matrix-cell" data-type="MAT" data-level="medium" placeholder="0" min="0"></td>
+              <td><input type="number" class="matrix-cell" data-type="MAT" data-level="hard" placeholder="0" min="0"></td>
+              <td><input type="number" class="matrix-cell" data-type="MAT" data-level="expert" placeholder="0" min="0"></td>
+              <td class="row-sum" data-type="MAT">0</td>
+            </tr>
+          </tbody>
+          <tfoot>
+            <tr>
+              <th>المجموع</th>
+              <td class="col-sum" data-level="easy">0</td>
+              <td class="col-sum" data-level="medium">0</td>
+              <td class="col-sum" data-level="hard">0</td>
+              <td class="col-sum" data-level="expert">0</td>
+              <td class="grand-sum" id="matrixGrandSum">0</td>
+            </tr>
+          </tfoot>
+        </table>
+      </div>
+    </div>
+
+    
+    <div class="options-section">
+      <h3>⚙️ خيارات إضافية</h3>
+
+      <div class="switch-row">
+        <div class="switch-label">
+          ترتيب الأسئلة عشوائياً
+          <span class="switch-desc">سيُطلب من الذكاء الاصطناعي خلط ترتيب الأسئلة</span>
+        </div>
+        <label class="switch">
+          <input type="checkbox" id="shuffleQuestions">
+          <span class="slider"></span>
+        </label>
+      </div>
+
+      <div class="switch-row">
+        <div class="switch-label">
+          ترتيب الخيارات عشوائياً
+          <span class="switch-desc">للأسئلة متعددة الخيارات (موضع الإجابة الصحيحة)</span>
+        </div>
+        <label class="switch">
+          <input type="checkbox" id="shuffleAnswers" checked>
+          <span class="slider"></span>
+        </label>
+      </div>
+
+      <div class="switch-row">
+        <div class="switch-label">
+          إضافة شرح للإجابة
+          <span class="switch-desc">يضع شرحاً مختصراً مع كل سؤال (في تعليق منفصل)</span>
+        </div>
+        <label class="switch">
+          <input type="checkbox" id="addExplanation">
+          <span class="slider"></span>
+        </label>
+      </div>
+    </div>
+
+    <button class="btn" id="generatePrompt">أنشئ البرومبت</button>
+
+    <div class="prompt-box empty" id="promptBox">سيظهر البرومبت هنا بعد توليده...</div>
+
+    <button class="btn btn-secondary" id="copyPrompt" style="display:none;">📋 نسخ البرومبت</button>
+
+    <div class="status" id="status1"></div>
+  </div>
+
+  
+  <div class="card">
+    <span class="step-badge">الخطوة ٢</span>
+    <h2>استخرج الأسئلة</h2>
+    <p class="card-desc">ألصق رد الذكاء الاصطناعي هنا، ستنظف الأداة الصيغة وتحوّلها لملف .txt جاهز للرفع</p>
+
+    <label for="aiResponse">رد الذكاء الاصطناعي</label>
+    <textarea id="aiResponse" placeholder="ألصق هنا الرد الذي حصلت عليه من ChatGPT أو غيره..." style="min-height:170px;"></textarea>
+
+    <div class="format-section">
+      <h3 style="font-size:14px; margin-bottom:10px; font-family:'Helvetica Neue', 'Helvetica', 'IBM Plex Sans Arabic', 'Cairo', Arial, sans-serif;">📦 صيغة الملف الناتج</h3>
+      <div class="format-options">
+        <label class="format-opt active" data-format="qti">
+          <input type="radio" name="format" value="qti" checked>
+          <div class="format-info">
+            <strong>📚 QTI 2.1 (موصى به لـ Ultra)</strong>
+            <span>ملف ZIP — يستورد لبنك الأسئلة بدون حذف، يدعم كل الأنواع</span>
+          </div>
+        </label>
+        <label class="format-opt" data-format="txt">
+          <input type="radio" name="format" value="txt">
+          <div class="format-info">
+            <strong>📄 TXT (Tab-delimited)</strong>
+            <span>للرفع داخل اختبار جديد — أسرع لكن لا يدعم كل الأنواع في Ultra</span>
+          </div>
+        </label>
+      </div>
+    </div>
+
+    <button class="btn" id="processResponse">حوّل وأنزل الملف</button>
+
+    <div class="status" id="status2"></div>
+
+    <div id="statsBox" class="stats" style="display:none;">
+      <div class="stat"><div class="stat-num" id="statTotal">0</div><div class="stat-label">المجموع</div></div>
+      <div class="stat"><div class="stat-num" id="statMC">0</div><div class="stat-label">اختيار</div></div>
+      <div class="stat"><div class="stat-num" id="statTF">0</div><div class="stat-label">صح/خطأ</div></div>
+      <div class="stat"><div class="stat-num" id="statOther">0</div><div class="stat-label">أخرى</div></div>
+    </div>
+
+    <div class="preview" id="preview"></div>
+  </div>
+
+</div>
+
+<div class="instructions">
+  <h3>📌 طريقة الاستخدام</h3>
+  <ol>
+    <li>ألصق المحتوى وحدد <strong>عدد كل نوع</strong> من الأسئلة (يمكن وضع 0 لتجاهل النوع)</li>
+    <li>فعّل خيارات الترتيب العشوائي والصعوبة حسب رغبتك</li>
+    <li>اضغط <strong>"أنشئ البرومبت"</strong> ثم <strong>"نسخ البرومبت"</strong></li>
+    <li>افتح <code>chatgpt.com</code> أو <code>gemini.google.com</code> وألصق البرومبت</li>
+    <li>انسخ الرد كاملاً وألصقه في الخانة الثانية</li>
+    <li>اختر صيغة الإخراج (QTI موصى به لـ Ultra)</li>
+    <li>اضغط <strong>"حوّل وأنزل الملف"</strong></li>
+  </ol>
+
+  <h3 style="margin-top:20px;">📚 رفع QTI 2.1 على بلاك بورد Ultra</h3>
+  <ol>
+    <li>اذهب إلى <code>محتوى المقرر</code></li>
+    <li>في اللوحة الجانبية → <code>Manage Banks</code> أو <code>إدارة بنوك الأسئلة</code></li>
+    <li>اضغط <strong>+</strong> ← <code>Import from File</code></li>
+    <li>اختر ملف <code>blackboard_QTI_*.zip</code> ✅</li>
+  </ol>
+
+  <h3 style="margin-top:20px;">📄 رفع TXT داخل اختبار</h3>
+  <ol>
+    <li>اذهب إلى <code>محتوى المقرر</code> ← <code>+</code> ← <code>Test</code></li>
+    <li>داخل الاختبار، اضغط <strong>+</strong> ← <code>رفع أسئلة من ملف</code></li>
+    <li>اختر ملف <code>blackboard_questions_*.txt</code> ✅</li>
+  </ol>
+</div>
+
+<footer>
+  <p>أداة محلية بالكامل — لا ترسل بياناتك لأي خادم</p>
+  <p class="signature">عمل على هذا المشروع <strong>م. أحمد سعيد العليلي</strong></p>
+</footer>
+
+</div>
+
+<script>
+// ═══════════════════════════════════════════════════
+// ═══════════════════════════════════════════════════
+(function protectApp() {
+  'use strict';
+
+  document.addEventListener('contextmenu', function(e) {
+    e.preventDefault();
+    return false;
+  }, true);
+
+  document.addEventListener('keydown', function(e) {
+    // F12
+    if (e.keyCode === 123) {
+      e.preventDefault();
+      return false;
+    }
+    // Ctrl+Shift+I (DevTools)
+    if (e.ctrlKey && e.shiftKey && e.keyCode === 73) {
+      e.preventDefault();
+      return false;
+    }
+    // Ctrl+Shift+J (Console)
+    if (e.ctrlKey && e.shiftKey && e.keyCode === 74) {
+      e.preventDefault();
+      return false;
+    }
+    // Ctrl+Shift+C (Inspect Element)
+    if (e.ctrlKey && e.shiftKey && e.keyCode === 67) {
+      e.preventDefault();
+      return false;
+    }
+    // Ctrl+U (View Source)
+    if (e.ctrlKey && e.keyCode === 85) {
+      e.preventDefault();
+      return false;
+    }
+    // Ctrl+S (Save Page)
+    if (e.ctrlKey && e.keyCode === 83) {
+      e.preventDefault();
+      return false;
+    }
+    // Ctrl+P (Print)
+    if (e.ctrlKey && e.keyCode === 80) {
+      e.preventDefault();
+      return false;
+    }
+  }, true);
+
+  let devtoolsOpen = false;
+  const threshold = 160;
+  setInterval(function() {
+    if (window.outerWidth - window.innerWidth > threshold ||
+        window.outerHeight - window.innerHeight > threshold) {
+      if (!devtoolsOpen) {
+        devtoolsOpen = true;
+        document.body.innerHTML = '<div style="display:flex;align-items:center;justify-content:center;height:100vh;font-family:Arial;direction:rtl;text-align:center;padding:20px;background:#1a1a1a;color:#fff;"><div><h1 style="font-size:48px;margin-bottom:20px;">🛡️</h1><h2>الوصول إلى أدوات المطور غير مسموح</h2><p style="margin-top:20px;color:#aaa;">يرجى إغلاق DevTools لمتابعة استخدام الأداة</p><button onclick="location.reload()" style="margin-top:30px;padding:12px 30px;background:#0f7359;color:#fff;border:none;border-radius:6px;cursor:pointer;font-size:14px;">تحديث الصفحة</button></div></div>';
+      }
+    }
+  }, 1000);
+
+  if (typeof console !== 'undefined') {
+    const noop = function() {};
+    ['log', 'info', 'warn', 'error', 'debug', 'trace', 'dir'].forEach(function(method) {
+      try { console[method] = noop; } catch(e) {}
+    });
+  }
+
+  document.addEventListener('dragstart', function(e) {
+    if (e.target.tagName !== 'INPUT' && e.target.tagName !== 'TEXTAREA') {
+      e.preventDefault();
+    }
+  }, true);
+
+  setInterval(function() {
+    try { console.clear(); } catch(e) {}
+  }, 500);
+
+  document.addEventListener('touchstart', function(e) {
+    if (e.touches.length > 1) e.preventDefault();
+  }, { passive: false });
+
+})();
+</script>
+
+<script>
+  const $ = id => document.getElementById(id);
+
+  function updateTotal() {
+    let total = 0;
+    document.querySelectorAll('.type-count').forEach(input => {
+      const val = parseInt(input.value) || 0;
+      total += val;
+      const row = input.closest('.type-row');
+      if (val > 0) row.classList.add('active');
+      else row.classList.remove('active');
+    });
+    $('totalCount').textContent = total;
+  }
+
+  document.querySelectorAll('.type-count').forEach(input => {
+    input.addEventListener('input', () => { updateTotal(); updateDiffValidation(); });
+  });
+  updateTotal();
+
+  const DIFFICULTY_LABELS = {
+    1: { ar: 'سهل جداً (تذكر)', en: 'very easy (recall)', desc: 'تذكر معلومات وحقائق مباشرة' },
+    2: { ar: 'سهل (فهم)', en: 'easy (understanding)', desc: 'فهم المفاهيم وتفسيرها' },
+    3: { ar: 'متوسط (تطبيق)', en: 'medium (application)', desc: 'تطبيق المفاهيم في حالات جديدة' },
+    4: { ar: 'صعب (تحليل)', en: 'hard (analysis)', desc: 'تحليل المعلومات والربط بينها' },
+    5: { ar: 'صعب جداً (تقييم/إبداع)', en: 'very hard (evaluation/creation)', desc: 'تقييم وحلول إبداعية' }
+  };
+
+  const LEVEL_TO_NUM = { easy: 2, medium: 3, hard: 4, expert: 5 };
+  const LEVEL_NAMES = {
+    easy: 'سهل (تذكر/فهم)',
+    medium: 'متوسط (تطبيق)',
+    hard: 'صعب (تحليل)',
+    expert: 'صعب جداً (تقييم/إبداع)'
+  };
+
+  document.querySelectorAll('.diff-mode-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.diff-mode-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      const mode = btn.dataset.mode;
+      $('panelSingle').style.display = mode === 'single' ? 'block' : 'none';
+      $('panelMixed').style.display = mode === 'mixed' ? 'block' : 'none';
+      $('panelProgressive').style.display = mode === 'progressive' ? 'block' : 'none';
+      btn.querySelector('input').checked = true;
+      updateDiffValidation();
+    });
+  });
+
+  document.querySelectorAll('.editor-mode-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.editor-mode-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      const editorMode = btn.dataset.editor;
+      $('simpleMode').style.display = editorMode === 'simple' ? 'block' : 'none';
+      $('advancedMode').style.display = editorMode === 'advanced' ? 'block' : 'none';
+      updateMatrix();
+      updateTotal();
+    });
+  });
+
+  function isAdvancedMode() {
+    const activeBtn = document.querySelector('.editor-mode-btn.active');
+    return activeBtn && activeBtn.dataset.editor === 'advanced';
+  }
+
+  function getCurrentMode() {
+    if (isAdvancedMode()) return 'advanced';
+    return document.querySelector('input[name="diffMode"]:checked').value;
+  }
+
+  $('singleDiff').addEventListener('input', (e) => {
+    const val = parseInt(e.target.value);
+    $('singleDiffLabel').textContent = DIFFICULTY_LABELS[val].ar;
+  });
+
+  document.querySelectorAll('.diff-count').forEach(input => {
+    input.addEventListener('input', updateDiffValidation);
+  });
+
+  function updateMatrix() {
+    const types = ['MC', 'TF', 'ESS', 'FIB', 'NUM', 'MAT'];
+    const levels = ['easy', 'medium', 'hard', 'expert'];
+
+    types.forEach(t => {
+      let sum = 0;
+      document.querySelectorAll(`.matrix-cell[data-type="${t}"]`).forEach(c => {
+        sum += parseInt(c.value) || 0;
+      });
+      document.querySelector(`.row-sum[data-type="${t}"]`).textContent = sum;
+    });
+
+    levels.forEach(lv => {
+      let sum = 0;
+      document.querySelectorAll(`.matrix-cell[data-level="${lv}"]`).forEach(c => {
+        sum += parseInt(c.value) || 0;
+      });
+      document.querySelector(`.col-sum[data-level="${lv}"]`).textContent = sum;
+    });
+
+    let grandTotal = 0;
+    document.querySelectorAll('.matrix-cell').forEach(c => {
+      grandTotal += parseInt(c.value) || 0;
+    });
+    $('matrixGrandSum').textContent = grandTotal;
+
+    if (getCurrentMode() === 'advanced') {
+      $('totalCount').textContent = grandTotal;
+    }
+  }
+
+  document.querySelectorAll('.matrix-cell').forEach(cell => {
+    cell.addEventListener('input', updateMatrix);
+  });
+
+  function updateDiffValidation() {
+    const mode = getCurrentMode();
+    const totalQuestions = parseInt($('totalCount').textContent) || 0;
+    const badge = $('diffTotal');
+
+    if (mode === 'mixed') {
+      let diffSum = 0;
+      document.querySelectorAll('.diff-count').forEach(i => diffSum += parseInt(i.value) || 0);
+      badge.textContent = `${diffSum} / ${totalQuestions}`;
+      badge.classList.add('show');
+      if (diffSum !== totalQuestions && diffSum > 0) {
+        badge.classList.add('mismatch');
+      } else {
+        badge.classList.remove('mismatch');
+      }
+    } else {
+      badge.classList.remove('show');
+    }
+  }
+
+  const originalUpdateTotal = updateTotal;
+  function updateAll() { originalUpdateTotal(); updateDiffValidation(); }
+
+  function buildPrompt(content, counts, options, difficulty) {
+    const typeNames = {
+      MC: 'اختيار من متعدد',
+      TF: 'صح/خطأ',
+      ESS: 'مقالي',
+      FIB: 'ملء الفراغ',
+      NUM: 'إجابة رقمية',
+      MAT: 'توصيل/مطابقة'
+    };
+
+    const requestedTypes = [];
+    let total = 0;
+
+    for (const [code, count] of Object.entries(counts)) {
+      if (count > 0) {
+        requestedTypes.push(`${count} سؤال ${typeNames[code]}`);
+        total += count;
+      }
+    }
+
+    const extraInstructions = [];
+    if (options.shuffleQuestions && difficulty.mode !== 'progressive') {
+      extraInstructions.push('🔀 رتّب الأسئلة بترتيب عشوائي (لا تجمع كل نوع معاً، اخلطها)');
+    }
+    if (options.shuffleAnswers) {
+      extraInstructions.push('🎲 في أسئلة الاختيار من متعدد: اجعل موضع الإجابة الصحيحة عشوائياً (ليست دائماً الأولى)');
+    }
+    if (options.addExplanation) {
+      extraInstructions.push('💡 ضع قبل كل سؤال تعليقاً يبدأ بـ # يحتوي شرحاً مختصراً للإجابة الصحيحة');
+    }
+
+    let difficultySection = '';
+    if (difficulty.mode === 'single') {
+      const lbl = DIFFICULTY_LABELS[difficulty.level];
+      difficultySection = `\n🎚️ مستوى الصعوبة المطلوب: **${lbl.ar}**
+   (${lbl.desc})
+   اجعل كل الأسئلة بنفس هذا المستوى من الصعوبة.`;
+    } else if (difficulty.mode === 'mixed') {
+      const parts = [];
+      for (const [level, count] of Object.entries(difficulty.mix)) {
+        if (count > 0) {
+          parts.push(`   - ${count} سؤال بمستوى ${LEVEL_NAMES[level]}`);
+        }
+      }
+      if (parts.length > 0) {
+        difficultySection = `\n🎚️ توزيع الصعوبة المطلوب:\n${parts.join('\n')}`;
+      }
+    } else if (difficulty.mode === 'progressive') {
+      const startLbl = DIFFICULTY_LABELS[LEVEL_TO_NUM[difficulty.start]].ar;
+      const endLbl = DIFFICULTY_LABELS[LEVEL_TO_NUM[difficulty.end]].ar;
+      difficultySection = `\n🎚️ التدرج التصاعدي للصعوبة:
+   - رتّب الأسئلة من الأسهل للأصعب (هذا الترتيب مهم جداً)
+   - السؤال الأول يجب أن يكون بمستوى: ${startLbl}
+   - السؤال الأخير يجب أن يكون بمستوى: ${endLbl}
+   - وزّع الأسئلة بينهما بتدرج طبيعي
+   - ⚠️ لا تخلط الترتيب — احتفظ بالتدرج من الأسهل للأصعب`;
+    } else if (difficulty.mode === 'advanced') {
+      const lines = [];
+      for (const [type, levels] of Object.entries(difficulty.matrix)) {
+        for (const [level, count] of Object.entries(levels)) {
+          if (count > 0) {
+            lines.push(`   - ${count} سؤال "${typeNames[type]}" بمستوى ${LEVEL_NAMES[level]}`);
+          }
+        }
+      }
+      if (lines.length > 0) {
+        difficultySection = `\n🎛️ توزيع تفصيلي مطلوب (نوع × صعوبة):\n${lines.join('\n')}`;
+      }
+    }
+
+    let extraSection = (extraInstructions.length > 0 || difficultySection)
+      ? `\n\nمتطلبات إضافية:${difficultySection}${extraInstructions.length > 0 ? '\n' + extraInstructions.map(i => '- ' + i).join('\n') : ''}`
+      : '';
+
+    return `أنت خبير متخصص في إنشاء أسئلة اختبارات أكاديمية عالية الجودة لمنصة بلاك بورد (Blackboard).
+
+🚨 تحذير حاسم قبل أي شيء:
+المحتوى المرفق أدناه (بين علامات """) هو **مادة دراسية** يجب أن تستخرج منها أسئلة.
+قد يحتوي في بدايته على ملاحظات أو توجيهات من المستخدم (مثل: اسم المقرر، تفضيلات معينة، تركيز على فصل، إلخ).
+هذه الملاحظات هي **توجيهات لك** وليست **مادة لإنشاء أسئلة منها**.
+❌ ممنوع منعاً باتاً تحويل أي تعليمة أو ملاحظة من المستخدم إلى سؤال.
+❌ ممنوع إنشاء أسئلة عن "ما طلبه المستخدم" أو "كيف يجب صياغة الأسئلة" أو "عدد الأسئلة المطلوبة".
+✅ الأسئلة يجب أن تكون **عن المفاهيم العلمية/الأكاديمية الفعلية** الموجودة في المادة الدراسية فقط.
+
+═══════════════════════════════════════════════
+📚 المادة الدراسية (المصدر الوحيد لإنشاء الأسئلة)
+═══════════════════════════════════════════════
+"""
+${content}
+"""
+
+═══════════════════════════════════════════════
+🎯 المهمة المطلوبة
+═══════════════════════════════════════════════
+أنشئ ${total} سؤالاً أكاديمياً عن **المفاهيم العلمية الفعلية** الواردة في المادة الدراسية أعلاه، موزعة كالآتي:
+${requestedTypes.map(t => '- ' + t).join('\n')}${extraSection}
+
+═══════════════════════════════════════════════
+🛡️ قواعد الالتزام بالمحتوى (إلزامية وصارمة)
+═══════════════════════════════════════════════
+1. ❌ ممنوع منعاً باتاً اختراع أو إضافة معلومات من خارج المادة الدراسية
+2. ❌ ممنوع الاعتماد على معرفتك العامة أو معلومات من الإنترنت
+3. ❌ ممنوع الاستنتاج من معلومات غير مذكورة صراحة في النص
+4. ❌ ممنوع تحويل التعليمات أو الملاحظات إلى أسئلة (مثلاً: "كم عدد المعادلات المطلوبة؟" — هذا ممنوع لأنه عن التعليمة وليس عن المادة العلمية)
+5. ❌ ممنوع إنشاء أسئلة "ميتا" عن طريقة الإجابة أو شكل السؤال أو عدد الأسئلة
+6. ✅ كل سؤال يجب أن يكون عن **حقيقة علمية أو مفهوم تقني أو معادلة أو تعريف** موجود في النص
+7. ✅ كل إجابة صحيحة يجب أن تكون قابلة للتحقق منها مباشرة من النص العلمي
+8. ✅ إذا كانت المادة الدراسية لا تكفي لإنشاء العدد المطلوب، أنشئ ما يمكنك من أسئلة عالية الجودة بدلاً من ملء الفراغ
+
+═══════════════════════════════════════════════
+✅ اختبار التحقق الذاتي (طبّقه على كل سؤال قبل كتابته)
+═══════════════════════════════════════════════
+اسأل نفسك عن كل سؤال:
+1. هل هذا السؤال عن مفهوم علمي/تقني/أكاديمي حقيقي؟ (يجب: نعم)
+2. هل يمكنني تحديد الفقرة أو السطر في المادة التي تحتوي على إجابة هذا السؤال؟ (يجب: نعم)
+3. هل السؤال عن "ما طلبه المستخدم" أو "تعليمات الصياغة"؟ (يجب: لا)
+4. هل سيتعلم الطالب شيئاً مفيداً من هذا السؤال عن المادة؟ (يجب: نعم)
+
+إذا كانت إجابة أي من 1، 2، 4 بـ "لا"، أو إجابة 3 بـ "نعم" → احذف السؤال وأنشئ غيره.
+
+═══════════════════════════════════════════════
+🔍 قواعد التدقيق والجودة
+═══════════════════════════════════════════════
+قبل تسليم الأسئلة، راجعها بنفسك مرتين على الأقل، وتأكد من كل سؤال أنه:
+
+✓ السؤال عن مفهوم علمي/أكاديمي حقيقي من المادة (وليس عن التعليمات)
+✓ السؤال واضح وغير مبهم ولا يحتمل أكثر من تفسير
+✓ السؤال مذكور بصياغة عربية صحيحة لغوياً ونحوياً
+✓ الإجابة الصحيحة موجودة فعلاً في النص العلمي وليست استنتاجاً
+✓ الخيارات الخاطئة (للاختيار من متعدد) معقولة وقريبة من الإجابة الصحيحة لتفادي التخمين السهل
+✓ الخيارات الخاطئة ليست خاطئة بشكل واضح أو مضحك (مثل "كل ما سبق صحيح" أو خيارات لا علاقة لها)
+✓ خيار واحد فقط هو الصحيح في أسئلة الاختيار من متعدد
+✓ سؤال صح/خطأ له إجابة قاطعة لا جدال فيها من النص
+✓ سؤال ملء الفراغ له إجابة واحدة محددة وليست مفتوحة لعدة احتمالات
+✓ سؤال الإجابة الرقمية له إجابة رقمية دقيقة مع هامش خطأ منطقي
+✓ سؤال التوصيل به أزواج واضحة لا تتداخل
+✓ لا يوجد تكرار في الأسئلة أو في صياغتها
+✓ الأسئلة تغطي جوانب متنوعة من المادة وليست محصورة في فقرة واحدة
+
+═══════════════════════════════════════════════
+📝 قواعد التنسيق (إلزامية)
+═══════════════════════════════════════════════
+1. كل سؤال في سطر واحد فقط
+2. افصل الحقول بحرف Tab حقيقي (مفتاح Tab في الكيبورد) — لا تكتب كلمة "TAB" ولا أقواس
+3. لا تكتب ترقيم ولا شرح ولا Markdown ولا تعليقات
+4. ضع كل الأسئلة داخل code block واحد فقط
+5. التزم بالعدد المطلوب لكل نوع بدقة
+
+═══════════════════════════════════════════════
+📋 صيغ الأسئلة المقبولة
+═══════════════════════════════════════════════
+
+اختيار من متعدد:
+MC	نص السؤال	الخيار الأول	correct	الخيار الثاني	incorrect	الخيار الثالث	incorrect	الخيار الرابع	incorrect
+
+صح/خطأ:
+TF	نص السؤال	true
+TF	نص السؤال	false
+
+مقالي:
+ESS	نص السؤال
+
+ملء فراغ:
+FIB	نص السؤال مع ____ مكان الفراغ	الإجابة
+
+إجابة رقمية:
+NUM	نص السؤال الحسابي	الإجابة الرقمية	هامش الخطأ
+
+توصيل/مطابقة:
+MAT	نص السؤال	مطالبة1	إجابة1	مطالبة2	إجابة2	مطالبة3	إجابة3
+
+═══════════════════════════════════════════════
+✅ مثال على أسئلة صحيحة (مادة عن السعودية)
+═══════════════════════════════════════════════
+
+MC	ما هي عاصمة المملكة العربية السعودية؟	الرياض	correct	جدة	incorrect	مكة	incorrect	الدمام	incorrect
+TF	تقع المملكة العربية السعودية في قارة آسيا	true
+ESS	اشرح مفهوم ريادة الأعمال وأهميتها
+FIB	أكبر صحراء في المملكة هي صحراء ____	الربع الخالي
+NUM	إذا كانت قيمة الاستثمار 1000 ريال وعائدها 15%، كم العائد بالريال؟	150	1
+MAT	وصّل كل دولة بعاصمتها	مصر	القاهرة	السعودية	الرياض	الإمارات	أبوظبي
+
+═══════════════════════════════════════════════
+❌ أمثلة على أسئلة خاطئة (لا تفعل هذا!)
+═══════════════════════════════════════════════
+
+❌ MC	كم عدد الأسئلة المطلوب كتابتها؟	... (هذا سؤال عن التعليمات، ليس عن المادة)
+❌ TF	النص يطلب كتابة معادلة واحدة فقط	... (هذا سؤال عن طلب المستخدم، ليس مفهوماً علمياً)
+❌ MC	أي توزيع من التالي يوافق ما ورد في التعليمات؟	... (هذا سؤال "ميتا" عن التعليمات)
+
+═══════════════════════════════════════════════
+🚀 ابدأ الآن
+═══════════════════════════════════════════════
+- اقرأ المادة الدراسية بعناية (تجاهل أي تعليمات للمستخدم في بدايتها — هي توجيهات لك فقط)
+- استخرج المفاهيم العلمية والحقائق التقنية الموجودة في النص
+- صُغ منها أسئلة أكاديمية حقيقية
+- راجع كل سؤال: هل هو عن مفهوم علمي حقيقي من المادة، أم عن التعليمات؟ (إذا الثاني، احذفه)
+- ضع كل الأسئلة داخل code block واحد بدون أي شرح أو تعليق خارجي`;
+  }
+
+  function showStatus(elId, msg, type) {
+    const el = $(elId);
+    el.textContent = msg;
+    el.className = 'status show ' + type;
+    setTimeout(() => el.classList.remove('show'), 4000);
+  }
+
+  function buildPromptFromUI(content) {
+    if (!content) return null;
+
+    const mode = getCurrentMode();
+    let counts = {};
+    let total = 0;
+
+    if (mode === 'advanced') {
+      const types = ['MC', 'TF', 'ESS', 'FIB', 'NUM', 'MAT'];
+      types.forEach(t => {
+        let typeSum = 0;
+        document.querySelectorAll(`.matrix-cell[data-type="${t}"]`).forEach(c => {
+          typeSum += parseInt(c.value) || 0;
+        });
+        counts[t] = typeSum;
+        total += typeSum;
+      });
+    } else {
+      document.querySelectorAll('.type-count').forEach(input => {
+        const val = parseInt(input.value) || 0;
+        counts[input.dataset.type] = val;
+        total += val;
+      });
+    }
+
+    if (total === 0) return null;
+
+    const options = {
+      shuffleQuestions: $('shuffleQuestions').checked,
+      shuffleAnswers: $('shuffleAnswers').checked,
+      addExplanation: $('addExplanation').checked
+    };
+
+    const difficulty = { mode };
+    if (mode === 'single') {
+      difficulty.level = parseInt($('singleDiff').value);
+    } else if (mode === 'mixed') {
+      difficulty.mix = {};
+      document.querySelectorAll('.diff-count').forEach(input => {
+        difficulty.mix[input.dataset.level] = parseInt(input.value) || 0;
+      });
+    } else if (mode === 'progressive') {
+      difficulty.start = $('progStart').value;
+      difficulty.end = $('progEnd').value;
+    } else if (mode === 'advanced') {
+      difficulty.matrix = { MC: {}, TF: {}, ESS: {}, FIB: {}, NUM: {}, MAT: {} };
+      document.querySelectorAll('.matrix-cell').forEach(cell => {
+        difficulty.matrix[cell.dataset.type][cell.dataset.level] = parseInt(cell.value) || 0;
+      });
+    }
+
+    return buildPrompt(content, counts, options, difficulty);
+  }
+
+  $('generatePrompt').addEventListener('click', () => {
+    const content = $('content').value.trim();
+
+    if (!content) {
+      showStatus('status1', '⚠️ ألصق المحتوى أولاً', 'error');
+      return;
+    }
+
+    const mode = getCurrentMode();
+    let counts = {};
+    let total = 0;
+
+    if (mode === 'advanced') {
+      const types = ['MC', 'TF', 'ESS', 'FIB', 'NUM', 'MAT'];
+      types.forEach(t => {
+        let typeSum = 0;
+        document.querySelectorAll(`.matrix-cell[data-type="${t}"]`).forEach(c => {
+          typeSum += parseInt(c.value) || 0;
+        });
+        counts[t] = typeSum;
+        total += typeSum;
+      });
+    } else {
+      document.querySelectorAll('.type-count').forEach(input => {
+        const val = parseInt(input.value) || 0;
+        counts[input.dataset.type] = val;
+        total += val;
+      });
+    }
+
+    if (total === 0) {
+      showStatus('status1', '⚠️ حدد عدداً واحداً على الأقل من الأسئلة', 'error');
+      return;
+    }
+
+    const options = {
+      shuffleQuestions: $('shuffleQuestions').checked,
+      shuffleAnswers: $('shuffleAnswers').checked,
+      addExplanation: $('addExplanation').checked
+    };
+
+    const difficulty = { mode };
+    if (mode === 'single') {
+      difficulty.level = parseInt($('singleDiff').value);
+    } else if (mode === 'mixed') {
+      difficulty.mix = {};
+      let diffSum = 0;
+      document.querySelectorAll('.diff-count').forEach(input => {
+        const val = parseInt(input.value) || 0;
+        difficulty.mix[input.dataset.level] = val;
+        diffSum += val;
+      });
+      if (diffSum > 0 && diffSum !== total) {
+        showStatus('status1', `⚠️ مجموع الصعوبة (${diffSum}) لا يساوي مجموع الأسئلة (${total})`, 'error');
+        return;
+      }
+    } else if (mode === 'progressive') {
+      difficulty.start = $('progStart').value;
+      difficulty.end = $('progEnd').value;
+    } else if (mode === 'advanced') {
+      difficulty.matrix = { MC: {}, TF: {}, ESS: {}, FIB: {}, NUM: {}, MAT: {} };
+      document.querySelectorAll('.matrix-cell').forEach(cell => {
+        const t = cell.dataset.type;
+        const lv = cell.dataset.level;
+        difficulty.matrix[t][lv] = parseInt(cell.value) || 0;
+      });
+    }
+
+    const prompt = buildPrompt(content, counts, options, difficulty);
+
+    const box = $('promptBox');
+    box.textContent = prompt;
+    box.classList.remove('empty');
+    $('copyPrompt').style.display = 'block';
+    showStatus('status1', `✅ تم! البرومبت لـ ${total} سؤال جاهز`, 'success');
+  });
+
+  $('copyPrompt').addEventListener('click', async () => {
+    const text = $('promptBox').textContent;
+    try {
+      await navigator.clipboard.writeText(text);
+      showStatus('status1', '📋 تم النسخ! اذهب لـ ChatGPT وألصقه', 'success');
+    } catch (e) {
+      const ta = document.createElement('textarea');
+      ta.value = text;
+      document.body.appendChild(ta);
+      ta.select();
+      document.execCommand('copy');
+      document.body.removeChild(ta);
+      showStatus('status1', '📋 تم النسخ!', 'success');
+    }
+  });
+
+  document.querySelectorAll('.format-opt').forEach(opt => {
+    opt.addEventListener('click', () => {
+      document.querySelectorAll('.format-opt').forEach(o => o.classList.remove('active'));
+      opt.classList.add('active');
+      opt.querySelector('input').checked = true;
+    });
+  });
+
+  function escapeXml(text) {
+    return String(text)
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&apos;');
+  }
+
+  function uniqueId() {
+    return Math.floor(Math.random() * 90000000) + 10000000;
+  }
+
+  function buildAssessmentItem(line, index) {
+    const parts = line.split('\t').map(p => p.trim());
+    const type = parts[0];
+    const id = `QUE_${uniqueId()}_${index}`;
+    const itemId = `assessmentItem${String(index).padStart(5, '0')}`;
+
+    const NS = 'xmlns="http://www.imsglobal.org/xsd/imsqti_v2p1" xmlns:ns9="http://www.imsglobal.org/xsd/apip/apipv1p0/imsapip_qtiv1p0" xmlns:ns8="http://www.w3.org/1999/xlink" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.imsglobal.org/xsd/imsqti_v2p1 http://www.imsglobal.org/xsd/qti/qtiv2p1/imsqti_v2p1.xsd"';
+
+    let xml = `<?xml version='1.0' encoding='UTF-8'?><assessmentItem ${NS} adaptive="false" timeDependent="false" identifier="${id}">`;
+
+    if (type === 'MC' || type === 'TF') {
+      const question = parts[1] || '';
+      const choices = [];
+      const correctIds = [];
+
+      if (type === 'TF') {
+        const answer = (parts[2] || '').toLowerCase();
+        choices.push({ id: `${id}_true`, text: 'صواب', correct: answer === 'true', wrap: false });
+        choices.push({ id: `${id}_false`, text: 'خطأ', correct: answer === 'false', wrap: false });
+      } else {
+        for (let i = 2; i < parts.length; i += 2) {
+          if (!parts[i]) continue;
+          const text = parts[i];
+          const isCorrect = (parts[i+1] || '').toLowerCase() === 'correct';
+          const choiceId = `answer_${(i-2)/2 + 1}`;
+          choices.push({ id: choiceId, text: text, correct: isCorrect, wrap: true });
+        }
+      }
+
+      choices.filter(c => c.correct).forEach(c => correctIds.push(c.id));
+
+      const choicesXml = choices.map(c => {
+        const inner = c.wrap ? `<p>${escapeXml(c.text)}</p>` : escapeXml(c.text);
+        return `<simpleChoice identifier="${c.id}" fixed="true">${inner}</simpleChoice>`;
+      }).join('');
+
+      xml += `<responseDeclaration cardinality="single" baseType="identifier" identifier="RESPONSE"><correctResponse>${correctIds.map(c => `<value>${c}</value>`).join('')}</correctResponse></responseDeclaration><outcomeDeclaration identifier="SCORE" cardinality="single" baseType="float"><defaultValue><value>0</value></defaultValue></outcomeDeclaration><outcomeDeclaration identifier="FEEDBACKBASIC" cardinality="single" baseType="identifier"/><outcomeDeclaration identifier="MAXSCORE" cardinality="single" baseType="float"><defaultValue><value>0</value></defaultValue></outcomeDeclaration><itemBody><div><p>${escapeXml(question)}</p></div><choiceInteraction responseIdentifier="RESPONSE" maxChoices="1" shuffle="false">${choicesXml}</choiceInteraction></itemBody><responseProcessing><responseCondition><responseIf><match><variable identifier="RESPONSE"/><correct identifier="RESPONSE"/></match><setOutcomeValue identifier="SCORE"><variable identifier="MAXSCORE"/></setOutcomeValue><setOutcomeValue identifier="FEEDBACKBASIC"><baseValue baseType="identifier">correct_fb</baseValue></setOutcomeValue></responseIf><responseElse><setOutcomeValue identifier="FEEDBACKBASIC"><baseValue baseType="identifier">incorrect_fb</baseValue></setOutcomeValue></responseElse></responseCondition></responseProcessing>`;
+
+    } else if (type === 'ESS') {
+      const question = parts[1] || '';
+      xml += `<responseDeclaration cardinality="single" baseType="string" identifier="RESPONSE"/><outcomeDeclaration identifier="SCORE" cardinality="single" baseType="float"><defaultValue><value>0</value></defaultValue></outcomeDeclaration><outcomeDeclaration identifier="FEEDBACKBASIC" cardinality="single" baseType="identifier"/><outcomeDeclaration identifier="MAXSCORE" cardinality="single" baseType="float"><defaultValue><value>0</value></defaultValue></outcomeDeclaration><itemBody><div><p>${escapeXml(question)}</p></div><extendedTextInteraction responseIdentifier="RESPONSE"/></itemBody>`;
+
+    } else if (type === 'FIB') {
+      const question = parts[1] || '';
+      const answer = parts[2] || '';
+      xml += `<responseDeclaration cardinality="single" baseType="string" identifier="BLANK-1"><correctResponse><value>${escapeXml(answer)}</value></correctResponse><mapping><mapEntry mapKey="${escapeXml(answer)}" caseSensitive="false" mappedValue="100.0"/></mapping></responseDeclaration><outcomeDeclaration identifier="SCORE" cardinality="single" baseType="float"><defaultValue><value>0</value></defaultValue></outcomeDeclaration><outcomeDeclaration identifier="FEEDBACKBASIC" cardinality="single" baseType="identifier"/><outcomeDeclaration identifier="MAXSCORE" cardinality="single" baseType="float"><defaultValue><value>0</value></defaultValue></outcomeDeclaration><itemBody><div><p>${escapeXml(question)} <span>&#xa0;<a href="">[BLANK-1]</a></span></p></div><p><textEntryInteraction responseIdentifier="BLANK-1"/></p></itemBody>`;
+
+    } else if (type === 'NUM') {
+      const question = parts[1] || '';
+      const answer = parts[2] || '0';
+      const tolerance = parseFloat(parts[3] || '0');
+      const answerNum = parseFloat(answer);
+      const lower = answerNum - tolerance;
+      const upper = answerNum + tolerance;
+
+      xml += `<responseDeclaration cardinality="single" baseType="float" identifier="BLANK-1"><correctResponse><value>${answerNum}</value></correctResponse></responseDeclaration><outcomeDeclaration identifier="SCORE" cardinality="single" baseType="float"><defaultValue><value>0</value></defaultValue></outcomeDeclaration><outcomeDeclaration identifier="FEEDBACKBASIC" cardinality="single" baseType="identifier"/><outcomeDeclaration identifier="MAXSCORE" cardinality="single" baseType="float"><defaultValue><value>0</value></defaultValue></outcomeDeclaration><itemBody><div><p>${escapeXml(question)} <span>&#xa0;<a href="">[BLANK-1]</a></span></p></div><p><textEntryInteraction responseIdentifier="BLANK-1"/></p></itemBody><responseProcessing><responseCondition><responseIf><and><gte><variable identifier="BLANK-1"/><baseValue baseType="float">${lower}</baseValue></gte><lte><variable identifier="BLANK-1"/><baseValue baseType="float">${upper}</baseValue></lte></and><setOutcomeValue identifier="SCORE"><variable identifier="MAXSCORE"/></setOutcomeValue><setOutcomeValue identifier="FEEDBACKBASIC"><baseValue baseType="identifier">correct_fb</baseValue></setOutcomeValue></responseIf><responseElse><setOutcomeValue identifier="FEEDBACKBASIC"><baseValue baseType="identifier">incorrect_fb</baseValue></setOutcomeValue></responseElse></responseCondition></responseProcessing>`;
+
+    } else if (type === 'MAT') {
+      const question = parts[1] || '';
+      const pairs = [];
+      for (let i = 2; i < parts.length; i += 2) {
+        if (!parts[i] || !parts[i+1]) continue;
+        pairs.push({ src: parts[i], tgt: parts[i+1] });
+      }
+      if (pairs.length === 0) return null;
+
+      const sourceChoices = pairs.map((p, i) =>
+        `<simpleAssociableChoice identifier="src_${i+1}" matchMax="1" matchMin="0"><p>${escapeXml(p.src)}</p></simpleAssociableChoice>`
+      ).join('');
+      const targetChoices = pairs.map((p, i) =>
+        `<simpleAssociableChoice identifier="tgt_${i+1}" matchMax="1" matchMin="0"><p>${escapeXml(p.tgt)}</p></simpleAssociableChoice>`
+      ).join('');
+      const correctPairs = pairs.map((p, i) =>
+        `<value>src_${i+1} tgt_${i+1}</value>`
+      ).join('');
+
+      xml += `<responseDeclaration cardinality="multiple" baseType="directedPair" identifier="RESPONSE"><correctResponse>${correctPairs}</correctResponse></responseDeclaration><outcomeDeclaration identifier="SCORE" cardinality="single" baseType="float"><defaultValue><value>0</value></defaultValue></outcomeDeclaration><outcomeDeclaration identifier="FEEDBACKBASIC" cardinality="single" baseType="identifier"/><outcomeDeclaration identifier="MAXSCORE" cardinality="single" baseType="float"><defaultValue><value>0</value></defaultValue></outcomeDeclaration><itemBody><div><p>${escapeXml(question)}</p></div><matchInteraction responseIdentifier="RESPONSE" shuffle="false" maxAssociations="${pairs.length}"><simpleMatchSet>${sourceChoices}</simpleMatchSet><simpleMatchSet>${targetChoices}</simpleMatchSet></matchInteraction></itemBody><responseProcessing><responseCondition><responseIf><match><variable identifier="RESPONSE"/><correct identifier="RESPONSE"/></match><setOutcomeValue identifier="SCORE"><variable identifier="MAXSCORE"/></setOutcomeValue><setOutcomeValue identifier="FEEDBACKBASIC"><baseValue baseType="identifier">correct_fb</baseValue></setOutcomeValue></responseIf><responseElse><setOutcomeValue identifier="FEEDBACKBASIC"><baseValue baseType="identifier">incorrect_fb</baseValue></setOutcomeValue></responseElse></responseCondition></responseProcessing>`;
+
+    } else {
+      return null;
+    }
+
+    xml += `</assessmentItem>`;
+    return { xml, itemId };
+  }
+
+  function buildManifest(items) {
+    const dependencies = items.map(it => `<dependency identifierref="${it.itemId}"/>`).join('');
+    const itemResources = items.map(it =>
+      `<resource href="qti21/${it.itemId}.xml" identifier="${it.itemId}" type="imsqti_item_xmlv2p1"><file href="qti21/${it.itemId}.xml"/></resource>`
+    ).join('');
+
+    return `<?xml version="1.0" encoding="UTF-8"?>
+<manifest identifier="man00001" xmlns="http://www.imsglobal.org/xsd/imscp_v1p1" xmlns:csm="http://www.imsglobal.org/xsd/imsccv1p2/imscsmd_v1p0" xmlns:imsmd="http://ltsc.ieee.org/xsd/LOM" xmlns:imsqti="http://www.imsglobal.org/xsd/imsqti_metadata_v2p1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.imsglobal.org/xsd/imscp_v1p1 http://www.imsglobal.org/xsd/imscp_v1p2.xsd http://ltsc.ieee.org/xsd/LOM imsmd_loose_v1p3.xsd http://www.imsglobal.org/xsd/imsqti_metadata_v2p1 http://www.imsglobal.org/xsd/qti/qtiv2p1/imsqti_metadata_v2p1.xsd http://www.imsglobal.org/xsd/imsccv1p2/imscsmd_v1p0 http://www.imsglobal.org/profile/cc/ccv1p2/ccv1p2_imscsmd_v1p0.xsd"><metadata><schema>QTIv2.1</schema><schemaversion>2.0</schemaversion></metadata><organizations/><resources><resource href="qti21/question_bank00001.xml" identifier="question_bank00001" type="imsqti_test_xmlv2p1"><file href="qti21/question_bank00001.xml"/>${dependencies}</resource>${itemResources}</resources></manifest>`;
+  }
+
+  function buildQuestionBank(items, title) {
+    const refs = items.map(it => `<assessmentItemRef identifier="${it.itemId}" href="${it.itemId}.xml"/>`).join('');
+    return `<?xml version="1.0" encoding="UTF-8"?>
+<assessmentTest xmlns="http://www.imsglobal.org/xsd/imsqti_v2p1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.imsglobal.org/xsd/imsqti_v2p1 http://www.imsglobal.org/xsd/qti/qtiv2p1/imsqti_v2p1.xsd" identifier="question_bank00001" title="${escapeXml(title)}">
+<testPart identifier="question_bank00001_1" navigationMode="nonlinear" submissionMode="simultaneous">
+<assessmentSection identifier="question_bank00001_1_1" visible="false" title="Section 1">
+${refs}
+</assessmentSection>
+</testPart>
+</assessmentTest>`;
+  }
+
+  async function buildAndDownloadQTI(cleanedLines) {
+    if (typeof JSZip === 'undefined') {
+      showStatus('status2', '❌ مكتبة JSZip لم تُحمّل. تحقق من الإنترنت', 'error');
+      return 0;
+    }
+
+    const items = [];
+    cleanedLines.forEach((line, idx) => {
+      const item = buildAssessmentItem(line, idx + 1);
+      if (item) items.push(item);
+    });
+
+    if (items.length === 0) {
+      showStatus('status2', '❌ لم أتمكن من تحويل أي سؤال لـ QTI', 'error');
+      return 0;
+    }
+
+    const zip = new JSZip();
+    const title = 'بنك_أسئلة_' + new Date().toISOString().split('T')[0];
+
+    zip.file('imsmanifest.xml', buildManifest(items));
+    zip.folder('qti21').file('question_bank00001.xml', buildQuestionBank(items, title));
+    items.forEach(it => {
+      zip.folder('qti21').file(`${it.itemId}.xml`, it.xml);
+    });
+
+    const blob = await zip.generateAsync({ type: 'blob' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    const date = new Date().toISOString().split('T')[0];
+    a.download = `blackboard_QTI_${date}.zip`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+
+    return items.length;
+  }
+
+  $('processResponse').addEventListener('click', async () => {
+    const response = $('aiResponse').value.trim();
+    if (!response) {
+      showStatus('status2', '⚠️ ألصق رد الذكاء الاصطناعي أولاً', 'error');
+      return;
+    }
+
+    let text = response;
+    const codeBlockMatch = response.match(/```[\s\S]*?\n([\s\S]*?)```/);
+    if (codeBlockMatch) text = codeBlockMatch[1];
+
+    const lines = text.split('\n')
+      .map(l => l.trim())
+      .filter(l => l.length > 0 && !l.startsWith('#'));
+
+    const validTypes = /^(MC|TF|ESS|FIB|MA|MAT|NUM|SR|OP)\b/;
+    const templateMarkers = /\b(نص السؤال|الخيار الأول|الخيار الثاني|الخيار الثالث|الخيار الرابع|الإجابة الصحيحة|أو false|أو true|مطالبة\d+|إجابة\d+|خيار\d+)\b/;
+
+    let templateCount = 0;
+    const cleaned = lines
+      .filter(l => validTypes.test(l))
+      .map(line => {
+        line = line.replace(/<TAB>/gi, '\t');
+        line = line.replace(/\[TAB\]/gi, '\t');
+        if (!line.includes('\t')) {
+          line = line.replace(/\s{2,}/g, '\t');
+        }
+        return line;
+      })
+      .filter(line => {
+        if (templateMarkers.test(line)) {
+          templateCount++;
+          return false;
+        }
+        return true;
+      });
+
+    if (cleaned.length === 0) {
+      if (templateCount > 0) {
+        showStatus('status2', '❌ يبدو أنك لصقت القالب/البرومبت بدلاً من رد ChatGPT', 'error');
+      } else {
+        showStatus('status2', '❌ لم أجد أسئلة بصيغة صحيحة في الرد', 'error');
+      }
+      return;
+    }
+
+    const stats = { MC: 0, TF: 0, ESS: 0, FIB: 0, NUM: 0, MAT: 0, OTHER: 0 };
+    cleaned.forEach(line => {
+      const type = line.split('\t')[0] || line.split(/\s/)[0];
+      if (stats[type] !== undefined) stats[type]++;
+      else stats.OTHER++;
+    });
+
+    $('statTotal').textContent = cleaned.length;
+    $('statMC').textContent = stats.MC;
+    $('statTF').textContent = stats.TF;
+    $('statOther').textContent = stats.ESS + stats.FIB + stats.NUM + stats.MAT + stats.OTHER;
+    $('statsBox').style.display = 'flex';
+
+    const preview = $('preview');
+    preview.innerHTML = cleaned.slice(0, 5).map(line => {
+      const parts = line.split('\t');
+      const type = parts[0];
+      const question = parts[1] || '';
+      return `<div class="preview-line"><span class="type-badge">${type}</span>${question.substring(0, 80)}${question.length > 80 ? '...' : ''}</div>`;
+    }).join('') + (cleaned.length > 5 ? `<div class="preview-line" style="text-align:center;color:var(--ink-soft);">+ ${cleaned.length - 5} أسئلة أخرى</div>` : '');
+    preview.classList.add('show');
+
+    const format = document.querySelector('input[name="format"]:checked').value;
+
+    if (format === 'qti') {
+      showStatus('status2', '⏳ جاري بناء ملف QTI 2.1...', 'success');
+      const count = await buildAndDownloadQTI(cleaned);
+      if (count > 0) {
+        showStatus('status2', `✅ تم تنزيل ${count} سؤال بصيغة QTI 2.1 — جاهز لبنك الأسئلة`, 'success');
+      }
+    } else {
+      // ═══════════════════════════════════════════════
+      // TXT Export - Blackboard Ultra compatible
+      // ═══════════════════════════════════════════════
+      const txtSupported = ['MC', 'TF', 'ESS', 'FIB', 'NUM', 'MAT'];
+      const skipped = { types: {}, count: 0 };
+      const txtLines = [];
+
+      cleaned.forEach(line => {
+        const parts = line.split('\t').map(p => p.trim()).filter(p => p.length > 0);
+        if (parts.length < 2) return;
+        const type = parts[0];
+
+        if (!txtSupported.includes(type)) {
+          skipped.count++;
+          skipped.types[type] = (skipped.types[type] || 0) + 1;
+          return;
+        }
+
+        let formattedLine = null;
+
+        if (type === 'MC') {
+          // MC<TAB>question<TAB>choice1<TAB>correct/incorrect<TAB>choice2<TAB>correct/incorrect...
+          if (parts.length < 6) return; // need at least: MC + Q + 2 choices + 2 markers
+          const question = parts[1];
+          const choicePairs = [];
+          for (let i = 2; i < parts.length; i += 2) {
+            const choiceText = parts[i];
+            let marker = (parts[i+1] || '').toLowerCase();
+            if (marker !== 'correct' && marker !== 'incorrect') continue;
+            choicePairs.push(choiceText, marker);
+          }
+          if (choicePairs.length < 4) return; // at least 2 choices with markers
+          // verify exactly one correct
+          const correctCount = choicePairs.filter((_, i) => i % 2 === 1 && choicePairs[i] === 'correct').length;
+          if (correctCount !== 1) return;
+          formattedLine = ['MC', question, ...choicePairs].join('\t');
+
+        } else if (type === 'TF') {
+          // TF<TAB>question<TAB>True/False  (Blackboard expects capitalized)
+          if (parts.length < 3) return;
+          const answer = parts[2].toLowerCase();
+          if (answer !== 'true' && answer !== 'false') return;
+          const formatted = answer === 'true' ? 'True' : 'False';
+          formattedLine = ['TF', parts[1], formatted].join('\t');
+
+        } else if (type === 'ESS') {
+          // ESS<TAB>question[<TAB>example_answer]
+          if (parts.length < 2) return;
+          formattedLine = parts.join('\t');
+
+        } else if (type === 'FIB') {
+          // FIB<TAB>question<TAB>answer1[<TAB>answer2...]
+          if (parts.length < 3) return;
+          formattedLine = parts.join('\t');
+
+        } else if (type === 'NUM') {
+          // NUM<TAB>question<TAB>answer<TAB>tolerance
+          if (parts.length < 3) return;
+          const ans = parseFloat(parts[2]);
+          if (isNaN(ans)) return;
+          const tol = parts[3] ? parseFloat(parts[3]) : 0;
+          formattedLine = ['NUM', parts[1], ans, isNaN(tol) ? 0 : tol].join('\t');
+
+        } else if (type === 'MAT') {
+          // MAT<TAB>question<TAB>prompt1<TAB>match1<TAB>prompt2<TAB>match2...
+          if (parts.length < 6) return; // need at least 2 pairs
+          // ensure even number of pair fields
+          const pairFields = parts.slice(2);
+          if (pairFields.length % 2 !== 0) return;
+          formattedLine = parts.join('\t');
+        }
+
+        if (formattedLine) {
+          txtLines.push(formattedLine);
+        } else {
+          skipped.count++;
+          skipped.types[type] = (skipped.types[type] || 0) + 1;
+        }
+      });
+
+      if (txtLines.length === 0) {
+        showStatus('status2', '❌ لم أتمكن من تحويل أي سؤال لصيغة TXT صالحة', 'error');
+        return;
+      }
+
+      // Use \r\n line endings for Windows/Blackboard compatibility, with UTF-8 BOM
+      const fileContent = txtLines.join('\r\n');
+      const blob = new Blob(['\uFEFF' + fileContent], { type: 'text/plain;charset=utf-8' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      const date = new Date().toISOString().split('T')[0];
+      a.download = `blackboard_questions_${date}.txt`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+
+      let msg = `✅ تم تنزيل ${txtLines.length} سؤال بصيغة TXT`;
+      if (skipped.count > 0) {
+        const typeStr = Object.entries(skipped.types).map(([t, c]) => `${c} ${t}`).join('، ');
+        msg += ` (تم تخطي ${skipped.count}: ${typeStr})`;
+      }
+      showStatus('status2', msg, 'success');
+    }
+  });
+
+  document.addEventListener('keydown', (e) => {
+    if (e.ctrlKey && e.key === 'Enter') {
+      if (document.activeElement === $('content')) $('generatePrompt').click();
+      else if (document.activeElement === $('aiResponse')) $('processResponse').click();
+    }
+  });
+</script>
+
+</body>
+</html>
