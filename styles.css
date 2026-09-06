@@ -1555,6 +1555,18 @@ tfoot output,
   font-size: 0.875rem;
 }
 
+.contact-note {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.35rem;
+  margin-block: 0.5rem 0;
+  font-size: 0.875rem;
+  line-height: 1.75;
+  color: var(--ink-soft);
+}
+
+.site-header .feedback-link,
 .site-footer .feedback-link {
   display: inline-flex;
   align-items: center;
@@ -1573,10 +1585,12 @@ tfoot output,
   white-space: normal;
 }
 
+.site-header .feedback-link:hover,
 .site-footer .feedback-link:hover {
   background: var(--green-soft);
 }
 
+.site-header .feedback-link:focus-visible,
 .site-footer .feedback-link:focus-visible {
   outline: 3px solid var(--green-dark);
   outline-offset: 3px;

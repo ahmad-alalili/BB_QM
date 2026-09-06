@@ -109,12 +109,13 @@
   const notice = byId('analytics-notice');
   function dismissNotice() { notice.hidden = true; client.resume(); showPreference(); }
   function skipMeasurement() { client.setConsent('no'); dismissNotice(); }
-  byId('analytics-allow').addEventListener('click',() => { client.setConsent('yes'); dismissNotice(); });
+  function approveMeasurement() { client.setConsent('yes'); dismissNotice(); }
+  byId('analytics-allow').addEventListener('click',approveMeasurement);
   byId('analytics-decline').addEventListener('click',skipMeasurement);
   byId('analytics-notice-stop').addEventListener('click',skipMeasurement);
-  // Show on each page load; a previous refusal remains in force after Continue.
+  // Show on each page load; only explicit approval changes a saved refusal.
   notice.hidden = false;
-  byId('analytics-notice-close').addEventListener('click',dismissNotice);
+  byId('analytics-notice-close').addEventListener('click',approveMeasurement);
   byId('analytics-notice-privacy').addEventListener('click',() => { byId('analytics-privacy').open = true; });
   async function refresh() {
     const button = byId('analytics-refresh'); button.disabled = true;

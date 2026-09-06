@@ -97,6 +97,9 @@ test('notice is concise, visible on load, accessible on mobile and does not gate
   const html=readFileSync(require.resolve('../index.html'),'utf8'), source=readFileSync(require.resolve('../analytics.js'),'utf8');
   const css=readFileSync(require.resolve('../analytics.css'),'utf8');
   assert.match(html,/id="analytics-notice"[^>]+hidden/);
+  assert.match(html,/id="analytics-notice-title">نطوّر الموقع معك<\/h2>/);
+  assert.match(html,/تساعدنا إحصائيات الاستخدام الإجمالية في تحسين الأدوات وتطوير خدمات الموقع\. لا تشمل الإحصائيات محتوى أسئلتك أو إجاباتك\./);
+  assert.match(html,/id="analytics-notice-close"[^>]*>موافقة ومتابعة<\/button>/);
   assert.match(html,/aria-label="تخطي المشاركة في الإحصائيات">تخطي/);
   assert.match(css,/\.analytics-notice \{ position: fixed/);
   assert.match(css,/min-height: 44px; min-width: 44px/);
@@ -137,10 +140,12 @@ test('continue starts one view and preserves the privacy link and subsequent opt
   assert.equal(p.posts().length,1); assert.equal(p.element('analytics-notice').hidden,true);
   p.click('analytics-decline'); await p.window.BBAnalytics.track('prompt_copied'); assert.equal(p.posts().length,1);
 });
-test('repeated notice never re-enables past refusal or browser privacy signals', () => {
+test('explicit approval updates prior refusal but never overrides browser privacy signals', () => {
   for (const entries of [[['bb-qm:aggregate-enabled:v2','no']],[['bb-qm:measurement-consent:v1','no']]]) {
     const p=pageSetup(entries); assert.equal(p.element('analytics-notice').hidden,false);
-    p.click('analytics-notice-close'); assert.equal(p.posts().length,0);
+    assert.equal(p.posts().length,0); p.click('analytics-notice-stop'); assert.equal(p.posts().length,0);
+    p.click('analytics-notice-close'); assert.equal(p.posts().length,1);
+    assert.equal(p.stored.get('bb-qm:aggregate-enabled:v2'),'yes');
     p.click('analytics-allow'); assert.equal(p.posts().length,1);
   }
   for (const nav of [{doNotTrack:'1'},{globalPrivacyControl:true}]) {

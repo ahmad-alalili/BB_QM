@@ -80,6 +80,22 @@ test('footer credits the engineer and links safely to the exact feedback form', 
   assert.match(read('styles.css'), /\.feedback-link:focus-visible/);
 });
 
+test('contact note appears in both header and footer with safe accessible feedback links', () => {
+  const html = read('index.html');
+  for (const tag of ['header', 'footer']) {
+    const region = html.match(new RegExp(`<${tag}\\b[\\s\\S]*?<\\/${tag}>`))[0];
+    assert.match(region, /class="contact-note">يمكنك مراسلتي عبر/);
+    const anchor = region.match(/<a\b[^>]*class="feedback-link"[^>]*>/)[0];
+    assert.deepEqual(attributeValues(anchor, 'href'), [FEEDBACK_URL]);
+    assert.match(anchor, /target="_blank"/);
+    assert.match(anchor, /rel="noopener noreferrer"/);
+    assert.match(anchor, /aria-label="مراسلة المهندس أحمد سعيد العليلي عبر نموذج الملاحظات"/);
+  }
+  const css = read('styles.css');
+  assert.match(cssBlock(css, '.contact-note'), /flex-wrap: wrap/);
+  assert.match(css, /\.site-header \.feedback-link,/);
+});
+
 test('the interface uses the modern glass visual system with a solid fallback', () => {
   const css = read('styles.css');
   assert.match(css, /backdrop-filter:\s*blur\(var\(--blur\)\)/);

@@ -7,7 +7,7 @@
 })(typeof window !== 'undefined' ? window : null, function () {
   'use strict';
 
-  const VERSION = '2.15.0';
+  const VERSION = '2.15.1';
   const LEGACY_TSV_TYPES = Object.freeze(['MC', 'TF', 'ESS', 'FIB', 'NUM', 'MAT']);
   const NATIVE_JSONL_TYPES = Object.freeze(['MC', 'TF', 'ESS', 'FIB', 'NUM', 'MAT', 'MA', 'EO', 'JUM', 'CALC']);
   const TYPE_ORDER = NATIVE_JSONL_TYPES;
