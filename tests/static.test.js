@@ -52,14 +52,16 @@ test('the webpage has no remote runtime dependency', () => {
   );
 });
 
-test('the visible, package, and core versions stay synchronized', () => {
+test('the public version is 2.0 while internal package versions stay synchronized', () => {
   const html = read('index.html');
   const packageData = JSON.parse(read('package.json'));
   const lockData = JSON.parse(read('package-lock.json'));
   assert.equal(core.VERSION, packageData.version);
   assert.equal(lockData.version, packageData.version);
   assert.equal(lockData.packages[''].version, packageData.version);
-  assert.match(html, new RegExp(`id="app-version">${core.VERSION.replace(/\./g, '\\.')}`));
+  assert.equal(core.DISPLAY_VERSION, '2.0');
+  assert.match(html, /id="app-version">2\.0<\/span>/);
+  assert.match(read('app.js'), /elements\.appVersion\.textContent = core\.DISPLAY_VERSION;/);
 });
 
 test('footer credits the engineer and links safely to the exact feedback form', () => {

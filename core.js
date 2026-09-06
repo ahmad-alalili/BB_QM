@@ -8,6 +8,7 @@
   'use strict';
 
   const VERSION = '2.16.2';
+  const DISPLAY_VERSION = '2.0';
   const LEGACY_TSV_TYPES = Object.freeze(['MC', 'TF', 'ESS', 'FIB', 'NUM', 'MAT']);
   const NATIVE_JSONL_TYPES = Object.freeze(['MC', 'TF', 'ESS', 'FIB', 'NUM', 'MAT', 'MA', 'EO', 'JUM', 'CALC']);
   const TYPE_ORDER = NATIVE_JSONL_TYPES;
@@ -2891,6 +2892,7 @@ ${Object.keys(exactStructures).length ? `- بنية الأنواع يجب أن �
 
   return Object.freeze({
     VERSION,
+    DISPLAY_VERSION,
     TYPE_ORDER,
     LEGACY_TSV_TYPES,
     TYPE_LABELS,

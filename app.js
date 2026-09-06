@@ -1398,7 +1398,7 @@
   elements.validateResponse.addEventListener('click', validateResponse);
   elements.exportResponse.addEventListener('click', exportResponse);
 
-  elements.appVersion.textContent = core.VERSION;
+  elements.appVersion.textContent = core.DISPLAY_VERSION;
   updatePromptControls();
   syncMultipleAnswerLimits();
   renderCreditRows(core.smartCreditProfile(safeCorrectCount()));
