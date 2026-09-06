@@ -1,0 +1,10 @@
+Copyright (c) 2026 Ahmad Saeed Alalili
+
+All rights reserved.
+
+No permission is granted to copy, modify, distribute, sublicense, publish,
+or use this software except with the prior written permission of the
+copyright holder.
+
+Third-party components retain their own licenses. JSZip is distributed
+under the terms included in vendor/JSZip-LICENSE.md.

@@ -1,0 +1,12 @@
+{
+  "name": "blackboard-question-tools",
+  "version": "2.13.0",
+  "private": true,
+  "description": "أداة محلية لإنشاء وتدقيق وتصدير أسئلة Blackboard",
+  "scripts": {
+    "test": "node --test tests/*.test.js"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}

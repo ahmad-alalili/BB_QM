@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="منشئ أسئلة Blackboard">
+  <rect width="64" height="64" rx="16" fill="#0b6b52"/>
+  <path d="M18 17h28v30H18z" fill="#fffefa"/>
+  <path d="M24 24h16M24 31h16M24 38h10" fill="none" stroke="#0b6b52" stroke-linecap="round" stroke-width="4"/>
+</svg>
