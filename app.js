@@ -165,7 +165,7 @@
 
     elements.maSelectionLimit.min = '1';
     elements.maSelectionLimit.max = String(maximum);
-    elements.maSelectionLimit.value = String(maximum);
+    elements.maSelectionLimit.value = elements.maCorrectCount.value;
     return correctChanged;
   }
 

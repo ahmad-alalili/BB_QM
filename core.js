@@ -7,7 +7,7 @@
 })(typeof window !== 'undefined' ? window : null, function () {
   'use strict';
 
-  const VERSION = '2.16.1';
+  const VERSION = '2.16.2';
   const LEGACY_TSV_TYPES = Object.freeze(['MC', 'TF', 'ESS', 'FIB', 'NUM', 'MAT']);
   const NATIVE_JSONL_TYPES = Object.freeze(['MC', 'TF', 'ESS', 'FIB', 'NUM', 'MAT', 'MA', 'EO', 'JUM', 'CALC']);
   const TYPE_ORDER = NATIVE_JSONL_TYPES;
@@ -34,7 +34,7 @@
     multipleAnswer: Object.freeze({
       choiceCount: 4,
       correctCount: 2,
-      selectionLimit: 3,
+      selectionLimit: 2,
       partialCredit: false,
       creditLevels: Object.freeze(['most_correct', 'least_correct']),
       percentages: Object.freeze([75, 25]),
@@ -368,7 +368,7 @@
       multipleAnswer: {
         choiceCount: promptInteger(multipleAnswer.choiceCount, DEFAULT_QUESTION_SETTINGS.multipleAnswer.choiceCount),
         correctCount,
-        selectionLimit: promptInteger(multipleAnswer.selectionLimit, DEFAULT_QUESTION_SETTINGS.multipleAnswer.selectionLimit),
+        selectionLimit: promptInteger(multipleAnswer.selectionLimit, correctCount),
         partialCredit: Boolean(multipleAnswer.partialCredit),
         creditLevels: promptCreditLevels(multipleAnswer.creditLevels, smartProfile.map((entry) => entry.level)),
         percentages: promptPercentages(multipleAnswer.percentages, smartProfile.map((entry) => entry.percent)),
@@ -429,8 +429,8 @@
       if (!Number.isInteger(settings.correctCount) || settings.correctCount < 1 || settings.correctCount >= settings.choiceCount) {
         errors.push('عدد الإجابات الصحيحة في MA يجب أن يكون من 1 إلى أقل من عدد الخيارات.');
       }
-      if (!Number.isInteger(settings.selectionLimit) || settings.selectionLimit !== settings.choiceCount - 1 || settings.selectionLimit < settings.correctCount) {
-        errors.push('حد اختيار الطالب في MA يجب أن يساوي عدد الخيارات ناقص واحد، وألا يقل عن عدد الإجابات الصحيحة.');
+      if (!Number.isInteger(settings.selectionLimit) || settings.selectionLimit !== settings.correctCount) {
+        errors.push('حد اختيار الطالب في MA يجب أن يساوي عدد الإجابات الصحيحة.');
       }
       if (settings.partialCredit) {
         if (settings.percentages.length !== settings.correctCount) {
@@ -713,7 +713,7 @@ ${optionLines.length ? `\nخيارات إضافية:\n${optionLines.join('\n')}`
 معايير الجودة:
 - اجعل كل سؤال قابلًا للتحقق مباشرة من المصدر، واضحًا، وغير مكرر.
 - في MC يجب أن توجد إجابة صحيحة واحدة فقط وخياران على الأقل.
-- في MA يجب أن توجد إجابة صحيحة واحدة على الأقل وخاطئة واحدة على الأقل، وأن يساوي selectionLimit عدد الخيارات ناقص واحد وألا يقل عن عدد الإجابات الصحيحة. عند partialCredit=true يجب أن تحمل كل choices قيمة percent، وأن تجمع نسب الصحيحة 100% وتكون نسب الخاطئة 0%. أضف creditLevel إلى كل إجابة صحيحة فقط بالقيمة المحددة في EXACT_STRUCTURES: most_correct تعني الأكثر صحة، وcorrect تعني صحيحة، وleast_correct تعني الأقل صحة.
+- في MA يجب أن توجد إجابة صحيحة واحدة على الأقل وخاطئة واحدة على الأقل، وأن يساوي selectionLimit عدد الإجابات الصحيحة تمامًا. عند partialCredit=true يجب أن تحمل كل choices قيمة percent، وأن تجمع نسب الصحيحة 100% وتكون نسب الخاطئة 0%. أضف creditLevel إلى كل إجابة صحيحة فقط بالقيمة المحددة في EXACT_STRUCTURES: most_correct تعني الأكثر صحة، وcorrect تعني صحيحة، وleast_correct تعني الأقل صحة.
 - في TF استخدم true أو false فقط.
 - في FIB ضع علامة ____ مستقلة مرة واحدة بالضبط داخل نص السؤال، ولا تزد عدد الشرطات السفلية.
 - في NUM استخدم رقمًا صالحًا وهامش خطأ غير سالب؛ اجعل القيم والنطاق قابلة للتمثيل ضمن 12 منزلة عشرية ومن دون صيغة أسية.
@@ -1136,8 +1136,8 @@ ${Object.keys(exactStructures).length ? `- بنية الأنواع يجب أن �
           if (profileError) return [nativeValidationError('ma_credit_level', profileError)];
         }
       }
-      if (value.selectionLimit != null && (!Number.isInteger(value.selectionLimit) || value.selectionLimit !== choices.length - 1 || value.selectionLimit < correctCount)) {
-        return [nativeValidationError('ma_selection_limit', 'selectionLimit يجب أن يساوي عدد الخيارات ناقص واحد، وألا يقل عن عدد الإجابات الصحيحة.')];
+      if (value.selectionLimit != null && (!Number.isInteger(value.selectionLimit) || value.selectionLimit !== correctCount)) {
+        return [nativeValidationError('ma_selection_limit', 'selectionLimit يجب أن يساوي عدد الإجابات الصحيحة تمامًا.')];
       }
       const normalizedQuestion = {
         type: value.type,
@@ -1146,7 +1146,7 @@ ${Object.keys(exactStructures).length ? `- بنية الأنواع يجب أن �
         choices,
       };
       if (value.type === 'MA') {
-        normalizedQuestion.selectionLimit = value.selectionLimit == null ? choices.length - 1 : value.selectionLimit;
+        normalizedQuestion.selectionLimit = value.selectionLimit == null ? correctCount : value.selectionLimit;
         if (partialCredit) normalizedQuestion.partialCredit = true;
       }
       return [{ value: normalizedQuestion }];
@@ -1488,8 +1488,8 @@ ${Object.keys(exactStructures).length ? `- بنية الأنواع يجب أن �
         if (question.type === 'MA' && (correctCount < 1 || correctCount === question.choices.length)) {
           errors.push('MA يحتاج إجابة صحيحة واحدة على الأقل وخيارًا خاطئًا واحدًا على الأقل.');
         }
-        if (question.type === 'MA' && question.selectionLimit != null && (!Number.isInteger(question.selectionLimit) || question.selectionLimit !== question.choices.length - 1 || question.selectionLimit < correctCount)) {
-          errors.push('حد اختيارات MA يجب أن يساوي عدد الخيارات ناقص واحد، وألا يقل عن عدد الإجابات الصحيحة.');
+        if (question.type === 'MA' && question.selectionLimit != null && (!Number.isInteger(question.selectionLimit) || question.selectionLimit !== correctCount)) {
+          errors.push('حد اختيارات MA يجب أن يساوي عدد الإجابات الصحيحة.');
         }
         if (question.type === 'MA') {
           const partialCredit = question.partialCredit === true;
@@ -1632,7 +1632,7 @@ ${Object.keys(exactStructures).length ? `- بنية الأنواع يجب أن �
       } else if (question.type === 'MA') {
         const choices = Array.isArray(question.choices) ? question.choices : [];
         const correct = choices.filter((choice) => choice && choice.correct === true);
-        const actualLimit = question.selectionLimit == null ? choices.length - 1 : question.selectionLimit;
+        const actualLimit = question.selectionLimit == null ? correct.length : question.selectionLimit;
         if (choices.length !== settings.multipleAnswer.choiceCount
           || correct.length !== settings.multipleAnswer.correctCount
           || actualLimit !== settings.multipleAnswer.selectionLimit) {
@@ -1795,7 +1795,7 @@ ${Object.keys(exactStructures).length ? `- بنية الأنواع يجب أن �
       const correctValues = choices.map((choice, choiceIndex) => choice.correct ? `<value>CHOICE_${choiceIndex + 1}</value>` : '').join('');
       declarations = `<responseDeclaration identifier="RESPONSE" cardinality="${multiple ? 'multiple' : 'single'}" baseType="identifier"><correctResponse>${correctValues}</correctResponse></responseDeclaration>${outcomes}`;
       const choicesXml = choices.map((choice, choiceIndex) => `<simpleChoice identifier="CHOICE_${choiceIndex + 1}">${escapeXml(choice.text)}</simpleChoice>`).join('');
-      const maxChoices = multiple ? (question.selectionLimit == null ? choices.length - 1 : question.selectionLimit) : 1;
+      const maxChoices = multiple ? (question.selectionLimit == null ? choices.filter((choice) => choice.correct).length : question.selectionLimit) : 1;
       body = `<itemBody><choiceInteraction responseIdentifier="RESPONSE" shuffle="${settings.shuffleAnswers ? 'true' : 'false'}" maxChoices="${maxChoices}"><prompt>${escapeXml(question.question)}</prompt>${choicesXml}</choiceInteraction></itemBody>`;
       responseProcessing = qtiMatchMaximumProcessing();
     } else if (question.type === 'ESS') {
@@ -2051,7 +2051,7 @@ ${Object.keys(exactStructures).length ? `- بنية الأنواع يجب أن �
     const labels = question.choices.map((choice) => ({ ...choice, scoringId: nextResponseId(), displayId: nativeVisibleResponseId(nextResponseId) }));
     const response = `<response_lid ident="response" rcardinality="Multiple" rtiming="No"><render_choice shuffle="${shuffleAnswers ? 'Yes' : 'No'}" minnumber="0" maxnumber="0">${labels.map((choice) => `<flow_label class="Block"><response_label ident="${choice.displayId}" shuffle="Yes" rarea="Ellipse" rrange="Exact"><flow_mat class="FORMATTED_TEXT_BLOCK">${nativeHtmlMaterial(`<p>${escapeHtmlText(choice.text)}</p>`)}</flow_mat></response_label></flow_label>`).join('')}</render_choice></response_lid>`;
     const clauses = labels.map((choice) => choice.correct ? `<varequal respident="استجابة" case="No">${choice.scoringId}</varequal>` : `<not><varequal respident="استجابة" case="No">${choice.scoringId}</varequal></not>`).join('');
-    const limit = multiple ? (question.selectionLimit == null ? labels.length - 1 : question.selectionLimit) : 1;
+    const limit = multiple ? (question.selectionLimit == null ? labels.filter((choice) => choice.correct).length : question.selectionLimit) : 1;
     const single = labels.filter((choice) => choice.correct).length === 1;
     const zeroConditions = labels.map((choice) => `<respcondition><conditionvar><varequal respident="${choice.scoringId}" case="No"/></conditionvar><setvar variablename="SCORE" action="Set">0</setvar></respcondition>`).join('');
     const conditions = `<respcondition title="correct"><conditionvar><and>${clauses}</and></conditionvar><setvar variablename="SCORE" action="Set">SCORE.max</setvar><setvar variablename="single_correct_answer" action="Set">${single}</setvar><setvar variablename="answer_selection_limit" action="Set">${limit}</setvar><displayfeedback linkrefid="correct" feedbacktype="Response"/></respcondition>${nativeIncorrectCondition()}${zeroConditions}`;
@@ -2090,7 +2090,7 @@ ${Object.keys(exactStructures).length ? `- بنية الأنواع يجب أن �
       : `<not><varequal respident="${responseIdentifier}" case="No">${choice.scoringId}</varequal></not>`).join('');
     const correctCount = labels.filter((choice) => choice.correct).length;
     const singleCorrect = `<setvar variablename="single_correct_answer" action="Set">${correctCount === 1 ? 'true' : 'false'}</setvar>`;
-    const selectionLimit = question.selectionLimit == null ? labels.length - 1 : question.selectionLimit;
+    const selectionLimit = question.selectionLimit == null ? correctCount : question.selectionLimit;
     const percentageConditions = labels.map((choice) => `<respcondition><conditionvar><varequal respident="${choice.scoringId}" case="No"/></conditionvar><setvar variablename="SCORE" action="Set">${decimalText(choice.percent, 5)}</setvar></respcondition>`).join('');
     const conditions = `<respcondition title="correct"><conditionvar><and>${clauses}</and></conditionvar><setvar variablename="SCORE" action="Set">SCORE.max</setvar>${singleCorrect}<setvar variablename="answer_selection_limit" action="Set">${selectionLimit}</setvar><displayfeedback linkrefid="correct" feedbacktype="Response"/></respcondition>${nativeIncorrectCondition()}${percentageConditions}`;
     const feedbackIds = [...labels.map((choice) => choice.scoringId), ...labels.map((choice) => choice.displayId)];
@@ -2653,11 +2653,8 @@ ${Object.keys(exactStructures).length ? `- بنية الأنواع يجب أن �
             : singleMatches.length === 0);
         if (settings.mode === 'pool' || weightedMultipleAnswer) {
           const selectionLimit = selectionMatches.length === 1 ? Number(selectionMatches[0][1]) : NaN;
-          // MC uses limit 1; explicit MA retains the configured n-minus-one
-          // limit even when it has only one correct answer. Both serialize
-          // with the same single-correct flag and cannot be distinguished here.
-          const singleChoiceLimit = settings.mode === 'pool' && !weightedMultipleAnswer && positiveCount === 1 && selectionLimit === 1;
-          if (unexpectedSetvars !== '' || !Number.isInteger(selectionLimit) || selectionLimit < positiveCount || (!singleChoiceLimit && selectionLimit !== displayIds.length - 1) || !hasValidSingleFlag) {
+          // Both MC and MA allow exactly as many selections as correct answers.
+          if (unexpectedSetvars !== '' || !Number.isInteger(selectionLimit) || selectionLimit !== positiveCount || !hasValidSingleFlag) {
             throw new ValidationError('حد الاختيار وعلامة الإجابة المفردة لا يطابقان صيغة Blackboard المرجعية.');
           }
         } else if (unexpectedSetvars !== '' || selectionMatches.length !== 0 || !hasValidSingleFlag) {

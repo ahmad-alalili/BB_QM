@@ -193,7 +193,7 @@ test('prompt enforces matching extras, weighted multiple answers, and dropdown d
       jumbled: { distractorCount: 3 },
     },
   }));
-  assert.ok(fullSelection.errors.some((message) => message.includes('عدد الخيارات ناقص واحد')));
+  assert.ok(fullSelection.errors.some((message) => message.includes('يساوي عدد الإجابات الصحيحة')));
 });
 
 test('parser accepts every supported TXT type without silently dropping records', () => {
@@ -413,7 +413,7 @@ test('QTI explains mixed-format rejection without dropping questions or advertis
 
 test('QTI MA preserves nonadjacent correct options, multiple cardinality, and selection limit', () => {
   const question = {
-    type: 'MA', question: 'اختر الصحيح <أو> الصحيح الآخر.', points: 1, selectionLimit: 3,
+    type: 'MA', question: 'اختر الصحيح <أو> الصحيح الآخر.', points: 1, selectionLimit: 2,
     choices: [
       { text: 'أ & ب', correct: true },
       { text: 'خاطئ', correct: false },
@@ -424,13 +424,13 @@ test('QTI MA preserves nonadjacent correct options, multiple cardinality, and se
   const xml = core.buildQtiItem(question, 1, { shuffleAnswers: true }).xml;
   assert.match(xml, /responseDeclaration identifier="RESPONSE" cardinality="multiple" baseType="identifier"/);
   assert.match(xml, /<correctResponse><value>CHOICE_1<\/value><value>CHOICE_3<\/value><\/correctResponse>/);
-  assert.match(xml, /shuffle="true" maxChoices="3"/);
+  assert.match(xml, /shuffle="true" maxChoices="2"/);
   assert.match(xml, /<simpleChoice identifier="CHOICE_1">أ &amp; ب<\/simpleChoice>/);
   assert.match(xml, /<setOutcomeValue identifier="SCORE"><variable identifier="MAXSCORE"\/><\/setOutcomeValue>/);
   assert.doesNotMatch(xml, /questestinterop|x-bb-qti|<mapping|map_response/);
   const withoutExplicitLimit = { ...question };
   delete withoutExplicitLimit.selectionLimit;
-  assert.match(core.buildQtiItem(withoutExplicitLimit, 2).xml, /maxChoices="3"/);
+  assert.match(core.buildQtiItem(withoutExplicitLimit, 2).xml, /maxChoices="2"/);
 });
 
 test('QTI bank round-trips all five supported types without native resources', async () => {
@@ -608,7 +608,7 @@ test('prompt switches to strict JSONL when a native-only question type is reques
   assert.match(prompt, /blackboard-native-jsonl/);
   assert.match(prompt, /"type":"CALC"/);
   assert.match(prompt, /علامة ____ مستقلة مرة واحدة بالضبط/);
-  assert.match(prompt, /يساوي selectionLimit عدد الخيارات ناقص واحد/);
+  assert.match(prompt, /يساوي selectionLimit عدد الإجابات الصحيحة تمامًا/);
   assert.match(prompt, /قرّب answer مسبقًا/);
   assert.match(prompt, /EXACT_TOTAL=1/);
   assert.match(prompt, /EXACT_COUNTS=\{"MC":0,"TF":0,"ESS":0,"FIB":0,"NUM":0,"MAT":0,"MA":0,"EO":0,"JUM":0,"CALC":1\}/);
@@ -717,7 +717,7 @@ test('native JSONL rejects unsafe numeric ranges, impossible limits, invalid row
   assert.ok(codes(core.parseAIResponse(nativeDoc([{ type: 'MA', question: 'حد كامل', points: 1, choices: [{ text: 'أ', correct: true }, { text: 'ب', correct: false }, { text: 'ج', correct: false }], selectionLimit: 3 }]))).includes('ma_selection_limit'));
   const automaticLimit = core.parseAIResponse(nativeDoc([{ type: 'MA', question: 'حد تلقائي', points: 1, choices: [{ text: 'أ', correct: true }, { text: 'ب', correct: false }, { text: 'ج', correct: false }] }]));
   assert.deepEqual(automaticLimit.errors, []);
-  assert.equal(automaticLimit.questions[0].selectionLimit, 2);
+  assert.equal(automaticLimit.questions[0].selectionLimit, 1);
   assert.ok(codes(core.parseAIResponse(nativeDoc([{ type: 'ESS', question: 'صفوف', points: 1, rows: 0 }]))).includes('ess_structure'));
   assert.ok(codes(core.parseAIResponse(nativeDoc([{ type: 'TF', question: `غير صالح\uD800`, points: 1, answer: true }]))).includes('jsonl_field_type'));
   assert.doesNotThrow(() => core.parseAIResponse(nativeDoc([{ type: 'JUM', question: null, points: 1, slots: [] }])));
@@ -957,10 +957,10 @@ test('native bank validator rejects legacy MC items and broken single-answer fla
   assert.throws(() => core.validateNativeFiles(alter('answer_selection_limit" action="Set">1', 'answer_selection_limit" action="Set">2'), { mode: 'pool' }), core.ValidationError);
 });
 
-test('native bank MA keeps its requested n-minus-one selection limit even with one correct option', () => {
-  const question = { type: 'MA', question: 'اختيار مرن بأربعة خيارات', points: 6, selectionLimit: 3, choices: ['أ', 'ب', 'ج', 'د'].map((text, index) => ({ text, correct: index === 1 })) };
+test('native bank MA limits selection to one when only one option is correct', () => {
+  const question = { type: 'MA', question: 'اختر الإجابة الصحيحة من أربعة خيارات', points: 6, selectionLimit: 1, choices: ['أ', 'ب', 'ج', 'د'].map((text, index) => ({ text, correct: index === 1 })) };
   const output = core.buildNativeFiles([question], { mode: 'pool', idSeed: 816 });
-  assert.match(output.files['res00002.dat'], /answer_selection_limit" action="Set">3<\/setvar>/);
+  assert.match(output.files['res00002.dat'], /answer_selection_limit" action="Set">1<\/setvar>/);
   assert.equal(core.validateNativeFiles(output.files, { mode: 'pool' }).totalPoints, 6);
 });
 

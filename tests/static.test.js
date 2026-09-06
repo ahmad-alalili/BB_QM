@@ -211,7 +211,8 @@ test('question structure controls expose matching extras, smart MA credit rows, 
   assert.match(html, /id="ma-selection-limit"[^>]*readonly[^>]*aria-readonly="true"/);
   assert.match(app, /function syncMultipleAnswerLimits\(\)/);
   assert.match(app, /elements\.maCorrectCount\.max = String\(maximum\)/);
-  assert.match(app, /elements\.maSelectionLimit\.value = String\(maximum\)/);
+  assert.match(app, /elements\.maSelectionLimit\.value = elements\.maCorrectCount\.value/);
+  assert.match(html, /يساوي عدد الإجابات الصحيحة تلقائيًا/);
   const percentWrap = cssBlock(read('styles.css'), '.credit-percent-wrap');
   const percentSuffix = cssBlock(read('styles.css'), '.credit-percent-wrap > span');
   assert.match(percentWrap, /display:\s*flex/);
