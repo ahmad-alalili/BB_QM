@@ -3,6 +3,7 @@ const test = require('node:test');
 const assert = require('node:assert/strict');
 const { createAnalytics } = require('../analytics.js');
 const { readFileSync } = require('node:fs');
+const { runInNewContext } = require('node:vm');
 function setup(overrides = {}, entries = []) {
   const calls = [], stored = new Map(entries);
   const env = { navigator:{}, location:{ origin:'https://ahmad-alalili.github.io',pathname:'/BB_QM/' },
@@ -92,10 +93,57 @@ test('public totals are read-only; legacy/malformed data is not displayed as new
   assert.equal(calls[0].body,undefined);
   env.fetch=async () => new Response('{"ok":true,"version":1}'); await assert.rejects(client.totals());
 });
-test('notice is informational, mobile friendly, and does not gate the workflow', () => {
+test('notice is concise, visible on load, accessible on mobile and does not gate tools', () => {
   const html=readFileSync(require.resolve('../index.html'),'utf8'), source=readFileSync(require.resolve('../analytics.js'),'utf8');
-  assert.match(html,/id="analytics-notice"[^>]+hidden/); assert.match(html,/يبدأ العدّ تلقائيًا/);
-  assert.match(html,/id="analytics-notice-stop"/); assert.match(html,/تجهيز الملف لا يؤكد حفظه أو استيراده/);
+  const css=readFileSync(require.resolve('../analytics.css'),'utf8');
+  assert.match(html,/id="analytics-notice"[^>]+hidden/);
+  assert.match(html,/aria-label="تخطي المشاركة في الإحصائيات">تخطي/);
+  assert.match(css,/\.analytics-notice \{ position: fixed/);
+  assert.match(css,/min-height: 44px; min-width: 44px/);
+  assert.match(css,/font-size: \.875rem/);
+  const privacy=html.match(/<details id="analytics-privacy">([\s\S]*?)<\/details>/)[1];
+  assert.doesNotMatch(privacy,/14|الجديد|UTC|Cloudflare|إعادة إرسال|لكل صيغة/);
+  assert.ok(privacy.replace(/<[^>]*>/g,' ').trim().split(/\s+/).length < 100);
   assert.doesNotMatch(source,/randomUUID|session_id|event_id|device_class|innerWidth|\.innerHTML|document\.cookie|sessionStorage|setInterval/);
   assert.doesNotMatch(source,/location\.(?:href|replace|assign)\s*[=(]/);
+});
+
+function pageSetup(entries = [], navigator = {}) {
+  const calls=[],stored=new Map(entries),elements=new Map();
+  const element=id => {
+    if (!elements.has(id)) elements.set(id,{hidden:true,disabled:false,textContent:'',listeners:{},addEventListener(name,fn){this.listeners[name]=fn;}});
+    return elements.get(id);
+  };
+  const window={navigator,location:{origin:'https://ahmad-alalili.github.io',pathname:'/BB_QM/'},setTimeout,clearTimeout,
+    localStorage:{getItem:key=>stored.get(key),setItem:(key,value)=>stored.set(key,value)},
+    document:{visibilityState:'visible',getElementById:element,addEventListener(){}},
+    fetch:async (url,options)=>{calls.push({url,...options});return new Response(JSON.stringify({ok:true,version:2,mode:'aggregate',since:null,totals:{page_views:0,validated_questions:0,exports_prepared:0}}));}};
+  runInNewContext(readFileSync(require.resolve('../analytics.js'),'utf8'),{window,AbortController,Intl});
+  return {window,calls,stored,element,click:id=>element(id).listeners.click(),posts:()=>calls.filter(c=>c.method==='POST')};
+}
+test('opening the notice never counts before a choice; skipping sends nothing and persists refusal', async () => {
+  const p=pageSetup([['bb-qm:aggregate-notice:v2','seen']]);
+  assert.equal(p.element('analytics-notice').hidden,false); assert.equal(p.posts().length,0);
+  await p.window.BBAnalytics.track('prompt_copied'); assert.equal(p.posts().length,0);
+  p.click('analytics-notice-stop');
+  assert.equal(p.element('analytics-notice').hidden,true);
+  assert.equal(p.stored.get('bb-qm:aggregate-enabled:v2'),'no');
+  await p.window.BBAnalytics.track('prompt_copied'); assert.equal(p.posts().length,0);
+});
+test('continue starts one view and preserves the privacy link and subsequent opt-out', async () => {
+  const p=pageSetup();
+  p.click('analytics-notice-privacy'); assert.equal(p.element('analytics-privacy').open,true); assert.equal(p.posts().length,0);
+  p.click('analytics-notice-close'); p.window.BBAnalytics.start();
+  assert.equal(p.posts().length,1); assert.equal(p.element('analytics-notice').hidden,true);
+  p.click('analytics-decline'); await p.window.BBAnalytics.track('prompt_copied'); assert.equal(p.posts().length,1);
+});
+test('repeated notice never re-enables past refusal or browser privacy signals', () => {
+  for (const entries of [[['bb-qm:aggregate-enabled:v2','no']],[['bb-qm:measurement-consent:v1','no']]]) {
+    const p=pageSetup(entries); assert.equal(p.element('analytics-notice').hidden,false);
+    p.click('analytics-notice-close'); assert.equal(p.posts().length,0);
+    p.click('analytics-allow'); assert.equal(p.posts().length,1);
+  }
+  for (const nav of [{doNotTrack:'1'},{globalPrivacyControl:true}]) {
+    const p=pageSetup([],nav); p.click('analytics-notice-close'); p.click('analytics-allow'); assert.equal(p.posts().length,0);
+  }
 });

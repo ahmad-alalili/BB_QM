@@ -1,6 +1,6 @@
 {
   "name": "blackboard-question-tools",
-  "version": "2.14.0",
+  "version": "2.15.0",
   "private": true,
   "description": "أداة محلية لإنشاء وتدقيق وتصدير أسئلة Blackboard",
   "scripts": {

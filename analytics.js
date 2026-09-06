@@ -5,9 +5,9 @@
   const EVENTS = ['page_view','prompt_created','prompt_copied','prompt_edited','prompt_pasted',
     'response_pasted','provider_opened','response_validated','validation_failed','export_created','export_failed','points_changed'];
   const ERRORS = ['syntax','quota','structure','duplicate','points','unsupported_format','size_limit','package','clipboard','unknown'];
-  function createAnalytics(env) {
+  function createAnalytics(env, { waitForNotice = false } = {}) {
     const key = 'bb-qm:aggregate-enabled:v2';
-    let choice = 'yes', viewed = false, sentCount = 0;
+    let choice = 'yes', viewed = false, sentCount = 0, ready = !waitForNotice;
     const sent = new Set(), active = new Set();
     try {
       const saved = env.localStorage.getItem(key);
@@ -17,7 +17,7 @@
     const privateMode = () => env.navigator.globalPrivacyControl === true || env.navigator.doNotTrack === '1';
     const production = () => env.location.origin === 'https://ahmad-alalili.github.io'
       && /^\/BB_QM\/(?:index\.html)?$/.test(env.location.pathname);
-    const enabled = () => choice === 'yes' && !privateMode() && production();
+    const enabled = () => ready && choice === 'yes' && !privateMode() && production();
     function makePayload(name, input) {
       if (!EVENTS.includes(name)) return null;
       const payload = { version:2, site:'BB_QM', event:name };
@@ -87,32 +87,35 @@
         return data;
       } finally { env.clearTimeout(timer); }
     }
-    return { track,start,setConsent,totals,status:() => privateMode() ? 'privacy' : !production() ? 'local' : choice };
+    function resume() { ready = true; start(); }
+    return { track,start,setConsent,totals,resume,status:() => privateMode() ? 'privacy' : !production() ? 'local' : choice };
   }
   if (typeof module === 'object' && module.exports) { module.exports = { createAnalytics }; return; }
-  const client = createAnalytics(root);
+  const client = createAnalytics(root, { waitForNotice:true });
   root.BBAnalytics = client;
   const byId = id => root.document.getElementById(id);
   function showPreference() {
     const state = client.status();
-    const message = state === 'privacy' ? 'العدّ متوقف احترامًا لإشارة الخصوصية في متصفحك.'
-      : state === 'local' ? 'هذه معاينة محلية؛ لا تُرسل منها أرقام استخدام.'
-      : state === 'no' ? 'العدّ متوقف حسب اختيارك المحفوظ. جميع الأدوات متاحة.'
-      : 'العدّ الإجمالي مفعّل. يمكنك إيقافه دون تعطيل أي أداة.';
+    const message = state === 'privacy' ? 'المشاركة متوقفة حسب إعدادات متصفحك.'
+      : state === 'local' ? 'الإحصائيات متوقفة في المعاينة.'
+      : state === 'no' ? 'المشاركة في الإحصائيات متوقفة.'
+      : 'تفضيلك: المشاركة في الإحصائيات.';
     byId('analytics-preference').textContent = message;
-    byId('analytics-notice-status').textContent = message;
+    byId('analytics-notice-status').textContent = state === 'yes' ? '' : message;
+    byId('analytics-notice-status').hidden = state === 'yes';
     byId('analytics-allow').disabled = state === 'privacy' || state === 'local' || state === 'yes';
     byId('analytics-decline').disabled = state === 'no' || state === 'privacy' || state === 'local';
   }
-  byId('analytics-allow').addEventListener('click',() => { client.setConsent('yes'); showPreference(); });
-  byId('analytics-decline').addEventListener('click',() => { client.setConsent('no'); showPreference(); });
-  byId('analytics-notice-stop').addEventListener('click',() => { client.setConsent('no'); showPreference(); });
-  const notice = byId('analytics-notice'), noticeKey = 'bb-qm:aggregate-notice:v2';
-  try { notice.hidden = root.localStorage.getItem(noticeKey) === 'seen'; } catch (_) { notice.hidden = false; }
-  byId('analytics-notice-close').addEventListener('click',() => {
-    notice.hidden = true;
-    try { root.localStorage.setItem(noticeKey,'seen'); } catch (_) { /* Informational notice only. */ }
-  });
+  const notice = byId('analytics-notice');
+  function dismissNotice() { notice.hidden = true; client.resume(); showPreference(); }
+  function skipMeasurement() { client.setConsent('no'); dismissNotice(); }
+  byId('analytics-allow').addEventListener('click',() => { client.setConsent('yes'); dismissNotice(); });
+  byId('analytics-decline').addEventListener('click',skipMeasurement);
+  byId('analytics-notice-stop').addEventListener('click',skipMeasurement);
+  // Show on each page load; a previous refusal remains in force after Continue.
+  notice.hidden = false;
+  byId('analytics-notice-close').addEventListener('click',dismissNotice);
+  byId('analytics-notice-privacy').addEventListener('click',() => { byId('analytics-privacy').open = true; });
   async function refresh() {
     const button = byId('analytics-refresh'); button.disabled = true;
     byId('analytics-status').textContent = 'جارٍ جلب الإجماليات…';
@@ -120,8 +123,8 @@
       const data = await client.totals();
       for (const field of ['page_views','validated_questions','exports_prepared']) byId('total-'+field).textContent = new Intl.NumberFormat('ar-SA').format(data.totals[field]);
       byId('analytics-status').textContent = data.since
-        ? `إجماليات العدّ الجديد منذ ${data.since} (UTC). قد يتأخر التحديث دقيقة؛ التفاصيل اليومية خاصة بمالك الموقع.`
-        : 'بدأ نظام العدّ الإجمالي الجديد؛ لا توجد أرقام مسجّلة فيه بعد.';
+        ? `إحصائيات الاستخدام منذ ${data.since}.`
+        : 'لا توجد إحصائيات مسجّلة بعد.';
     } catch (_) {
       for (const field of ['page_views','validated_questions','exports_prepared']) byId('total-'+field).textContent = '—';
       byId('analytics-status').textContent = 'تعذر جلب الإحصائيات الآن. لا يؤثر ذلك في إنشاء الأسئلة أو تصديرها.';
