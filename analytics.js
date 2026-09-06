@@ -106,17 +106,28 @@
     byId('analytics-allow').disabled = state === 'privacy' || state === 'local' || state === 'yes';
     byId('analytics-decline').disabled = state === 'no' || state === 'privacy' || state === 'local';
   }
-  const notice = byId('analytics-notice');
-  function dismissNotice() { notice.hidden = true; client.resume(); showPreference(); }
+  const gate = byId('analytics-gate'), siteContent = byId('site-content');
+  function dismissNotice() {
+    const openingSite = !gate.hidden;
+    gate.hidden = true;
+    siteContent.hidden = false;
+    siteContent.inert = false;
+    client.resume();
+    showPreference();
+    if (openingSite) {
+      byId('main-content').focus({ preventScroll:true });
+      if (typeof root.scrollTo === 'function') root.scrollTo({ top:0, left:0, behavior:'instant' });
+      void refresh();
+    }
+  }
   function skipMeasurement() { client.setConsent('no'); dismissNotice(); }
   function approveMeasurement() { client.setConsent('yes'); dismissNotice(); }
   byId('analytics-allow').addEventListener('click',approveMeasurement);
   byId('analytics-decline').addEventListener('click',skipMeasurement);
   byId('analytics-notice-stop').addEventListener('click',skipMeasurement);
-  // Show on each page load; only explicit approval changes a saved refusal.
-  notice.hidden = false;
+  // HTML hides/inerts the tools before first paint. Both choices open the same site.
+  // Show on every load; only explicit approval changes a saved refusal.
   byId('analytics-notice-close').addEventListener('click',approveMeasurement);
-  byId('analytics-notice-privacy').addEventListener('click',() => { byId('analytics-privacy').open = true; });
   async function refresh() {
     const button = byId('analytics-refresh'); button.disabled = true;
     byId('analytics-status').textContent = 'جارٍ جلب الإجماليات…';
@@ -133,5 +144,8 @@
   }
   byId('analytics-refresh').addEventListener('click',refresh);
   root.document.addEventListener('visibilitychange',() => client.start());
-  showPreference(); client.start(); void refresh();
+  showPreference();
+  byId('analytics-notice-close').disabled = false;
+  byId('analytics-notice-stop').disabled = false;
+  byId('analytics-notice-title').focus({ preventScroll:true });
 }(typeof window === 'object' ? window : globalThis));

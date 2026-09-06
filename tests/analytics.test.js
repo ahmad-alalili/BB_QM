@@ -93,18 +93,28 @@ test('public totals are read-only; legacy/malformed data is not displayed as new
   assert.equal(calls[0].body,undefined);
   env.fetch=async () => new Response('{"ok":true,"version":1}'); await assert.rejects(client.totals());
 });
-test('notice is concise, visible on load, accessible on mobile and does not gate tools', () => {
+test('entry screen hides all tools before first paint with a readable mobile-friendly choice', () => {
   const html=readFileSync(require.resolve('../index.html'),'utf8'), source=readFileSync(require.resolve('../analytics.js'),'utf8');
   const css=readFileSync(require.resolve('../analytics.css'),'utf8');
-  assert.match(html,/id="analytics-notice"[^>]+hidden/);
-  assert.match(html,/id="analytics-notice-title">نطوّر الموقع معك<\/h2>/);
+  assert.match(html,/<section id="analytics-gate"[^>]*aria-labelledby="analytics-notice-title"/);
+  assert.doesNotMatch(html,/<section id="analytics-gate"[^>]*\bhidden\b/);
+  assert.match(html,/<div id="site-content" hidden inert>/);
+  assert.ok(html.indexOf('id="analytics-gate"') < html.indexOf('id="site-content"'));
+  assert.ok(html.indexOf('id="site-content"') < html.indexOf('<header'));
+  assert.match(html,/<\/footer>\s*<\/div>\s*<\/body>/);
+  assert.match(html,/id="analytics-notice-title" tabindex="-1">نطوّر الموقع معك<\/h2>/);
   assert.match(html,/تساعدنا إحصائيات الاستخدام الإجمالية في تحسين الأدوات وتطوير خدمات الموقع\. لا تشمل الإحصائيات محتوى أسئلتك أو إجاباتك\./);
   assert.match(html,/id="analytics-notice-close"[^>]*>موافقة ومتابعة<\/button>/);
-  assert.match(html,/aria-label="تخطي المشاركة في الإحصائيات">تخطي/);
-  assert.match(css,/\.analytics-notice \{ position: fixed/);
+  assert.match(html,/aria-label="تخطي المشاركة في الإحصائيات" disabled>تخطي/);
+  assert.match(css,/#site-content\[hidden\], \.analytics-gate\[hidden\] \{ display: none !important/);
+  assert.match(css,/min-height: 100svh/);
+  assert.doesNotMatch(css,/position: fixed/);
   assert.match(css,/min-height: 44px; min-width: 44px/);
   assert.match(css,/font-size: \.875rem/);
   const privacy=html.match(/<details id="analytics-privacy">([\s\S]*?)<\/details>/)[1];
+  const entryPrivacy=html.match(/<details id="analytics-notice-privacy"[^>]*>([\s\S]*?)<\/details>/)[1];
+  const paragraphs=privacy.match(/<p>[\s\S]*?<\/p>/g);
+  assert.deepEqual(entryPrivacy.match(/<p>[\s\S]*?<\/p>/g),paragraphs);
   assert.doesNotMatch(privacy,/14|الجديد|UTC|Cloudflare|إعادة إرسال|لكل صيغة/);
   assert.ok(privacy.replace(/<[^>]*>/g,' ').trim().split(/\s+/).length < 100);
   assert.doesNotMatch(source,/randomUUID|session_id|event_id|device_class|innerWidth|\.innerHTML|document\.cookie|sessionStorage|setInterval/);
@@ -112,37 +122,48 @@ test('notice is concise, visible on load, accessible on mobile and does not gate
 });
 
 function pageSetup(entries = [], navigator = {}) {
-  const calls=[],stored=new Map(entries),elements=new Map();
+  const calls=[],stored=new Map(entries),elements=new Map(),focuses=[],scrolls=[];
   const element=id => {
-    if (!elements.has(id)) elements.set(id,{hidden:true,disabled:false,textContent:'',listeners:{},addEventListener(name,fn){this.listeners[name]=fn;}});
+    if (!elements.has(id)) elements.set(id,{hidden:['site-content','analytics-notice-status'].includes(id),inert:id==='site-content',disabled:['analytics-notice-close','analytics-notice-stop'].includes(id),textContent:'',listeners:{},addEventListener(name,fn){this.listeners[name]=fn;},focus(){focuses.push(id);}});
     return elements.get(id);
   };
-  const window={navigator,location:{origin:'https://ahmad-alalili.github.io',pathname:'/BB_QM/'},setTimeout,clearTimeout,
+  const window={navigator,location:{origin:'https://ahmad-alalili.github.io',pathname:'/BB_QM/'},setTimeout,clearTimeout,scrollTo:options=>scrolls.push(options),
     localStorage:{getItem:key=>stored.get(key),setItem:(key,value)=>stored.set(key,value)},
     document:{visibilityState:'visible',getElementById:element,addEventListener(){}},
     fetch:async (url,options)=>{calls.push({url,...options});return new Response(JSON.stringify({ok:true,version:2,mode:'aggregate',since:null,totals:{page_views:0,validated_questions:0,exports_prepared:0}}));}};
   runInNewContext(readFileSync(require.resolve('../analytics.js'),'utf8'),{window,AbortController,Intl});
-  return {window,calls,stored,element,click:id=>element(id).listeners.click(),posts:()=>calls.filter(c=>c.method==='POST')};
+  return {window,calls,stored,element,focuses,scrolls,click:id=>element(id).listeners.click(),posts:()=>calls.filter(c=>c.method==='POST')};
 }
 test('opening the notice never counts before a choice; skipping sends nothing and persists refusal', async () => {
   const p=pageSetup([['bb-qm:aggregate-notice:v2','seen']]);
-  assert.equal(p.element('analytics-notice').hidden,false); assert.equal(p.posts().length,0);
+  assert.equal(p.element('analytics-gate').hidden,false); assert.equal(p.calls.length,0);
+  assert.equal(p.element('site-content').hidden,true); assert.equal(p.element('site-content').inert,true);
+  assert.deepEqual(p.focuses,['analytics-notice-title']);
+  assert.equal(p.element('analytics-notice-close').disabled,false); assert.equal(p.element('analytics-notice-stop').disabled,false);
   await p.window.BBAnalytics.track('prompt_copied'); assert.equal(p.posts().length,0);
   p.click('analytics-notice-stop');
-  assert.equal(p.element('analytics-notice').hidden,true);
+  assert.equal(p.element('analytics-gate').hidden,true);
+  assert.equal(p.element('site-content').hidden,false); assert.equal(p.element('site-content').inert,false);
+  assert.equal(p.focuses.at(-1),'main-content'); assert.equal(p.scrolls.length,1);
   assert.equal(p.stored.get('bb-qm:aggregate-enabled:v2'),'no');
   await p.window.BBAnalytics.track('prompt_copied'); assert.equal(p.posts().length,0);
 });
-test('continue starts one view and preserves the privacy link and subsequent opt-out', async () => {
+test('approval opens the same tools and starts one view; reading privacy alone does not open the site', async () => {
   const p=pageSetup();
-  p.click('analytics-notice-privacy'); assert.equal(p.element('analytics-privacy').open,true); assert.equal(p.posts().length,0);
+  // The native details element opens independently, without approving or showing the tools.
+  p.element('analytics-notice-privacy').open=true;
+  assert.equal(p.element('site-content').hidden,true); assert.equal(p.calls.length,0);
   p.click('analytics-notice-close'); p.window.BBAnalytics.start();
-  assert.equal(p.posts().length,1); assert.equal(p.element('analytics-notice').hidden,true);
+  assert.equal(p.posts().length,1); assert.equal(p.element('analytics-gate').hidden,true);
+  assert.equal(p.element('site-content').hidden,false); assert.equal(p.element('site-content').inert,false);
+  assert.deepEqual(p.focuses,['analytics-notice-title','main-content']);
   p.click('analytics-decline'); await p.window.BBAnalytics.track('prompt_copied'); assert.equal(p.posts().length,1);
+  assert.equal(p.focuses.length,2); assert.equal(p.scrolls.length,1);
+  assert.equal(p.calls.filter(c=>c.url.endsWith('/public-stats')).length,1);
 });
 test('explicit approval updates prior refusal but never overrides browser privacy signals', () => {
   for (const entries of [[['bb-qm:aggregate-enabled:v2','no']],[['bb-qm:measurement-consent:v1','no']]]) {
-    const p=pageSetup(entries); assert.equal(p.element('analytics-notice').hidden,false);
+    const p=pageSetup(entries); assert.equal(p.element('analytics-gate').hidden,false);
     assert.equal(p.posts().length,0); p.click('analytics-notice-stop'); assert.equal(p.posts().length,0);
     p.click('analytics-notice-close'); assert.equal(p.posts().length,1);
     assert.equal(p.stored.get('bb-qm:aggregate-enabled:v2'),'yes');
@@ -150,5 +171,17 @@ test('explicit approval updates prior refusal but never overrides browser privac
   }
   for (const nav of [{doNotTrack:'1'},{globalPrivacyControl:true}]) {
     const p=pageSetup([],nav); p.click('analytics-notice-close'); p.click('analytics-allow'); assert.equal(p.posts().length,0);
+    assert.equal(p.element('site-content').hidden,false);
   }
+});
+
+test('opening tools never depends on the analytics network and preserves the existing form nodes', async () => {
+  const p=pageSetup(), field=p.element('source-content'); field.value='مسودة محفوظة';
+  p.window.fetch=async()=>{throw Error('offline');};
+  p.click('analytics-notice-stop');
+  assert.equal(p.element('site-content').hidden,false); assert.equal(p.element('analytics-gate').hidden,true);
+  assert.equal(p.element('source-content'),field); assert.equal(field.value,'مسودة محفوظة');
+  await new Promise(resolve=>setImmediate(resolve));
+  assert.match(p.element('analytics-status').textContent,/تعذر جلب الإحصائيات/);
+  assert.equal(p.element('site-content').hidden,false);
 });
