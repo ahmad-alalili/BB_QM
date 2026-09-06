@@ -1548,6 +1548,40 @@ tfoot output,
   margin: 0;
 }
 
+.site-footer .footer-credit {
+  min-width: 0;
+  gap: 0.5rem;
+  align-content: start;
+  font-size: 0.875rem;
+}
+
+.site-footer .feedback-link {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 44px;
+  max-width: 100%;
+  padding: 0.5rem 0.75rem;
+  border: 1px solid var(--line-strong);
+  border-radius: 12px;
+  background: var(--surface-strong);
+  color: var(--green-dark);
+  font-weight: 700;
+  text-align: center;
+  text-decoration: underline;
+  text-underline-offset: 0.2em;
+  white-space: normal;
+}
+
+.site-footer .feedback-link:hover {
+  background: var(--green-soft);
+}
+
+.site-footer .feedback-link:focus-visible {
+  outline: 3px solid var(--green-dark);
+  outline-offset: 3px;
+}
+
 .global-alert {
   width: min(900px, calc(100% - 2rem));
   margin: 1rem auto;

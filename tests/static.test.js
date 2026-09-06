@@ -15,6 +15,7 @@ const PROVIDER_URLS = Object.freeze([
   'https://claude.ai/new',
   'https://gemini.google.com/app',
 ]);
+const FEEDBACK_URL = 'https://forms.cloud.microsoft/r/XcRLkytgSc';
 
 function attributeValues(source, attribute) {
   const pattern = new RegExp(`\\b${attribute}=["']([^"']+)["']`, 'gi');
@@ -36,7 +37,7 @@ test('the webpage has no remote runtime dependency', () => {
   const remoteLinks = attributeValues(html, 'href').filter((value) => /^https?:\/\//i.test(value));
 
   assert.deepEqual(remoteSources, []);
-  assert.deepEqual([...new Set(remoteLinks)].sort(), [...PROVIDER_URLS].sort());
+  assert.deepEqual([...new Set(remoteLinks)].sort(), [...PROVIDER_URLS, FEEDBACK_URL].sort());
   assert.doesNotMatch(html, /<link\b[^>]*href=["']https?:\/\//i);
   assert.doesNotMatch(html, /<(?:iframe|object|embed|source|video|audio|form)\b[^>]*(?:src|data|action)=["']https?:\/\//i);
   assert.doesNotMatch(styles, /url\(\s*["']?https?:\/\//i);
@@ -59,6 +60,24 @@ test('the visible, package, and core versions stay synchronized', () => {
   assert.equal(lockData.version, packageData.version);
   assert.equal(lockData.packages[''].version, packageData.version);
   assert.match(html, new RegExp(`id="app-version">${core.VERSION.replace(/\./g, '\\.')}`));
+});
+
+test('footer credits the engineer and links safely to the exact feedback form', () => {
+  const footer = read('index.html').match(/<footer\b[\s\S]*?<\/footer>/)[0];
+  assert.match(footer, /© 2026 المهندس <strong>أحمد سعيد العليلي<\/strong>/);
+  assert.match(footer, /جميع الحقوق محفوظة/);
+  const anchor = footer.match(/<a\b[^>]*class="feedback-link"[^>]*>/)[0];
+  assert.deepEqual(attributeValues(anchor, 'href'), [FEEDBACK_URL]);
+  assert.match(anchor, /target="_blank"/);
+  assert.match(anchor, /rel="noopener noreferrer"/);
+  assert.match(anchor, /aria-describedby="feedback-hint"/);
+  assert.match(footer, /id="feedback-hint">يفتح نموذج Microsoft Forms في تبويب جديد/);
+  assert.doesNotMatch(anchor, /data-provider|\?/);
+  const css = cssBlock(read('styles.css'), '.site-footer .feedback-link');
+  assert.match(css, /min-height: 44px/);
+  assert.match(css, /white-space: normal/);
+  assert.match(css, /max-width: 100%/);
+  assert.match(read('styles.css'), /\.feedback-link:focus-visible/);
 });
 
 test('the interface uses the modern glass visual system with a solid fallback', () => {
