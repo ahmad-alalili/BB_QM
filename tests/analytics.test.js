@@ -1,97 +1,101 @@
 'use strict';
 const test = require('node:test');
 const assert = require('node:assert/strict');
-const { randomUUID } = require('node:crypto');
 const { createAnalytics } = require('../analytics.js');
 const { readFileSync } = require('node:fs');
-
-function setup(overrides = {}) {
-  const calls = [];
-  const stored = new Map();
-  const env = { navigator: {}, innerWidth: 375, crypto: { randomUUID },
-    location: { origin: 'https://ahmad-alalili.github.io', pathname: '/BB_QM/' },
-    localStorage: { getItem: key => stored.get(key), setItem: (key, value) => stored.set(key, value) },
-    setTimeout, clearTimeout,
-    fetch: async (url, options) => { calls.push({ url, ...options }); return new Response('{}', { status: 201 }); },
-    ...overrides };
-  const client = createAnalytics(env);
-  return { client, calls, stored, env };
+function setup(overrides = {}, entries = []) {
+  const calls = [], stored = new Map(entries);
+  const env = { navigator:{}, location:{ origin:'https://ahmad-alalili.github.io',pathname:'/BB_QM/' },
+    localStorage:{ getItem:key => stored.get(key), setItem:(key,value) => stored.set(key,value) }, setTimeout,clearTimeout,
+    fetch:async (url,options) => { calls.push({ url,...options }); return new Response('{}',{ status:201 }); }, ...overrides };
+  return { client:createAnalytics(env),calls,stored,env };
 }
-const settle = () => new Promise(resolve => setImmediate(resolve));
-test('measurement is off by default and stores only the consent preference', async () => {
-  const { client, calls, stored } = setup();
-  client.start(); await client.track('prompt_created', { counts: { MC: 2 } });
-  assert.equal(calls.length, 0);
-  client.setConsent('yes'); await settle();
-  assert.equal(calls.length, 1);
-  assert.equal(JSON.parse(calls[0].body).event_name, 'page_view');
-  assert.deepEqual([...stored.values()], ['yes']);
-  client.start(); assert.equal(calls.length, 1);
-  client.setConsent('no'); await client.track('prompt_copied');
-  assert.equal(calls.length, 1);
+test('aggregate count starts automatically without identities or writing browser identifiers', async () => {
+  const { client,calls,stored } = setup(); client.start(); client.start();
+  await client.track('prompt_copied');
+  assert.equal(calls.length,2); assert.equal(stored.size,0);
+  assert.deepEqual(JSON.parse(calls[0].body),{ version:2,site:'BB_QM',event:'page_view' });
+  assert.match(calls[0].url,/\/aggregate$/);
 });
-test('DNT, GPC, localhost and unrelated paths never emit telemetry', async () => {
-  for (const overrides of [
-    { navigator: { doNotTrack: '1' } }, { navigator: { globalPrivacyControl: true } },
-    { location: { origin: 'http://127.0.0.1:61045', pathname: '/' } },
-    { location: { origin: 'https://ahmad-alalili.github.io', pathname: '/other/' } },
-  ]) {
-    const { client, calls } = setup(overrides);
-    client.setConsent('yes'); await client.track('prompt_copied');
-    assert.equal(calls.length, 0);
+test('existing refusals and new opt-outs remain effective', async () => {
+  for (const key of ['bb-qm:measurement-consent:v1','bb-qm:aggregate-enabled:v2']) {
+    const { client,calls,stored } = setup({},[[key,'no']]);
+    client.start(); await client.track('prompt_copied'); assert.equal(calls.length,0);
+    client.setConsent('yes'); assert.equal(calls.length,1);
+    client.setConsent('no'); await client.track('prompt_copied'); assert.equal(calls.length,1);
+    assert.equal(stored.get('bb-qm:aggregate-enabled:v2'),'no');
   }
 });
-test('no content, point values, or unknown metadata can enter a payload', async () => {
-  const { client, calls } = setup(); client.setConsent('yes');
-  await client.track('response_validated', { batch: randomUUID(), format: 'native-test',
-    counts: { MC: 3, TF: 2, secret: 'private' }, question: 'secret text', points: 42,
-    source: 'secret source', provider: 'not permitted', email: 'private' });
-  const data = JSON.parse(calls.at(-1).body);
-  assert.equal(data.question_count, 5); assert.deepEqual(data.question_types, { MC: 3, TF: 2 });
-  assert.doesNotMatch(calls.at(-1).body, /private|secret|email|source/);
-  assert.equal(Object.hasOwn(data, 'points'), false);
-  assert.equal(calls.at(-1).credentials, 'omit');
-  assert.equal(calls.at(-1).referrerPolicy, 'no-referrer');
+test('DNT, GPC, previews and unrelated paths do not emit counters', async () => {
+  for (const overrides of [{ navigator:{ doNotTrack:'1' } },{ navigator:{ globalPrivacyControl:true } },
+    { location:{ origin:'http://127.0.0.1:61046',pathname:'/' } },
+    { location:{ origin:'https://ahmad-alalili.github.io',pathname:'/other/' } }]) {
+    const { client,calls } = setup(overrides); client.setConsent('yes'); await client.track('prompt_copied');
+    assert.equal(calls.length,0);
+  }
 });
-test('revalidation and repeated export do not inflate per-page batch totals', async () => {
-  const { client, calls } = setup(); client.setConsent('yes');
-  const input = { batch: randomUUID(), counts: { ESS: 1 }, format: 'native-bank' };
-  await client.track('response_validated', input);
-  await client.track('response_validated', { ...input, format: 'native-test' });
-  await client.track('export_created', input); await client.track('export_created', input);
-  await client.track('export_created', { ...input, format: 'native-test' });
-  assert.deepEqual(calls.map(c => JSON.parse(c.body).event_name), ['page_view', 'response_validated', 'export_created', 'export_created']);
+test('hidden pages wait until visible; opt-out never recounts an existing view', () => {
+  const { client,calls,env } = setup({ document:{ visibilityState:'hidden' } });
+  client.start(); assert.equal(calls.length,0); env.document.visibilityState='visible'; client.start();
+  client.setConsent('no'); client.setConsent('yes'); assert.equal(calls.length,1);
 });
-test('bounded retries reuse the same event ID; failures never reject to the app', async () => {
-  const { client, calls, env } = setup(); client.setConsent('yes'); await settle();
-  env.fetch = async (url, options) => { calls.push({ url, ...options }); throw new Error('offline'); };
-  await client.track('prompt_copied');
-  assert.equal(calls.length, 3); assert.equal(calls[1].body, calls[2].body);
+test('network contains only allowed counter fields, no content, identities, device or points', async () => {
+  const { client,calls } = setup();
+  await client.track('response_validated',{ batch:1,counts:{ MC:3,TF:2,secret:'private' },format:'native-test',
+    question:'private',points:20,email:'private',session_id:'private',provider:'chatgpt',device:'phone' });
+  assert.deepEqual(JSON.parse(calls[0].body),{ version:2,site:'BB_QM',event:'response_validated',counts:{ MC:3,TF:2 } });
+  assert.equal(calls[0].credentials,'omit'); assert.equal(calls[0].referrerPolicy,'no-referrer');
 });
-test('invalid enums and oversized counts are not sent', async () => {
-  const { client, calls } = setup(); client.setConsent('yes');
-  for (const [name, input] of [['unknown', {}], ['provider_opened', { provider: 'unknown' }],
-    ['prompt_created', { counts: { MC: 251 } }], ['prompt_created', { counts: { MC: 1.5 } }],
-    ['export_created', { counts: { MC: 1 }, format: 'qti', batch: randomUUID() }]]) await client.track(name, input);
-  assert.equal(calls.length, 1);
+test('revalidation/export dedup stays in memory only; point changes count operations', async () => {
+  const { client,calls } = setup(); const input={ batch:1,counts:{ ESS:1 },format:'native-bank' };
+  await client.track('response_validated',input); await client.track('response_validated',input);
+  await client.track('export_created',input); await client.track('export_created',input);
+  await client.track('export_created',{ ...input,format:'native-test' });
+  await client.track('points_changed',input); await client.track('points_changed',input);
+  assert.equal(calls.length,5);
+  assert.ok(calls.every(call => !call.body.includes('batch')));
 });
-test('blocked browser storage and malformed statistics fail safely', async () => {
-  const { client } = setup({ localStorage: { getItem() { throw Error(); }, setItem() { throw Error(); } } });
-  client.setConsent('yes'); await client.track('prompt_copied');
-  await assert.rejects(client.totals());
+test('new edit/paste metrics do not include edited or pasted contents', async () => {
+  const { client,calls } = setup();
+  for (const event of ['prompt_edited','prompt_pasted','response_pasted']) await client.track(event,{ text:'PRIVATE' });
+  assert.equal(calls.length,3); assert.ok(calls.every(call => !call.body.includes('PRIVATE')));
+  const app=readFileSync(require.resolve('../app.js'),'utf8');
+  assert.match(app,/promptOutput\.addEventListener\('change', \(\) => measure\('prompt_edited'\)\)/);
+  assert.match(app,/inputType === 'insertFromPaste'\) measure\('prompt_pasted'\)/);
+  assert.match(app,/inputType === 'insertFromPaste'\) measure\('response_pasted'\)/);
 });
-test('public totals are fetched read-only and unavailable is not shown as zero', async () => {
-  const { client, calls, env } = setup();
-  env.fetch = async (url, options) => { calls.push({ url, ...options }); return new Response(JSON.stringify({ ok: true, totals: { page_views: 0, validated_questions: 12, exports_prepared: 3 } })); };
-  assert.equal((await client.totals()).totals.validated_questions, 12);
-  assert.equal(calls.length, 1); assert.match(calls[0].url, /\/public-stats$/); assert.equal(calls[0].body, undefined);
+test('failed requests never retry or interrupt the tools', async () => {
+  let n=0; const { client }=setup({ fetch:async () => { n++; throw Error('offline'); } });
+  await client.track('prompt_copied'); assert.equal(n,1);
 });
-test('analytics UI is separate from workflow and exposes equal opt-in/opt-out controls', () => {
-  const html = readFileSync(require.resolve('../index.html'), 'utf8');
-  assert.match(html, /id="analytics-allow" class="button secondary"/);
-  assert.match(html, /id="analytics-decline" class="button secondary"/);
-  assert.match(html, /connect-src https:\/\/bb-qm-analytics-api\.ahmad20xx2020\.workers\.dev;/);
-  const source = readFileSync(require.resolve('../analytics.js'), 'utf8');
-  assert.doesNotMatch(source, /\.innerHTML|document\.cookie|sessionStorage|setInterval/);
-  assert.match(html, /تجهيز الملف لا يؤكد حفظه أو استيراده/);
+test('opt-out aborts pending transmission', async () => {
+  let signal;
+  const { client }=setup({ fetch:async (url,options) => { signal=options.signal; return new Promise(resolve => signal.addEventListener('abort',resolve)); } });
+  const pending=client.track('prompt_copied'); client.setConsent('no'); await pending; assert.equal(signal.aborted,true);
+});
+test('bounded emission and invalid counts fail closed', async () => {
+  const { client,calls }=setup();
+  for (const [name,data] of [['unknown',{}],['prompt_created',{ counts:{ MC:251 } }],['prompt_created',{ counts:{ MC:1.5 } }],
+    ['export_created',{ batch:1,counts:{ MC:1 },format:'invalid' }],['response_validated',{ counts:{ MC:1 } }]]) await client.track(name,data);
+  assert.equal(calls.length,0);
+  for (let i=0;i<125;i++) await client.track('prompt_copied'); assert.equal(calls.length,120);
+});
+test('blocked storage does not break default counting or in-page opt-out', async () => {
+  const { client,calls }=setup({ localStorage:{ getItem(){ throw Error(); },setItem(){ throw Error(); } } });
+  client.start(); assert.equal(calls.length,1); client.setConsent('no'); await client.track('prompt_copied'); assert.equal(calls.length,1);
+});
+test('public totals are read-only; legacy/malformed data is not displayed as new totals', async () => {
+  const { client,calls,env }=setup();
+  env.fetch=async (url,options) => { calls.push({url,...options}); return new Response(JSON.stringify({ ok:true,version:2,mode:'aggregate',since:null,
+    totals:{ page_views:0,validated_questions:12,exports_prepared:3 } })); };
+  assert.equal((await client.totals()).totals.validated_questions,12);
+  assert.equal(calls[0].body,undefined);
+  env.fetch=async () => new Response('{"ok":true,"version":1}'); await assert.rejects(client.totals());
+});
+test('notice is informational, mobile friendly, and does not gate the workflow', () => {
+  const html=readFileSync(require.resolve('../index.html'),'utf8'), source=readFileSync(require.resolve('../analytics.js'),'utf8');
+  assert.match(html,/id="analytics-notice"[^>]+hidden/); assert.match(html,/يبدأ العدّ تلقائيًا/);
+  assert.match(html,/id="analytics-notice-stop"/); assert.match(html,/تجهيز الملف لا يؤكد حفظه أو استيراده/);
+  assert.doesNotMatch(source,/randomUUID|session_id|event_id|device_class|innerWidth|\.innerHTML|document\.cookie|sessionStorage|setInterval/);
+  assert.doesNotMatch(source,/location\.(?:href|replace|assign)\s*[=(]/);
 });

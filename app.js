@@ -3,11 +3,12 @@
 
   const core = window.BlackboardCore;
   const analyticsBatches = new Map();
+  let nextAnalyticsBatch = 0;
   function analyticsBatch() {
     const source = elements.aiResponse.value;
     if (!analyticsBatches.has(source)) {
       if (analyticsBatches.size >= 20) analyticsBatches.delete(analyticsBatches.keys().next().value);
-      analyticsBatches.set(source, window.crypto.randomUUID());
+      analyticsBatches.set(source, ++nextAnalyticsBatch);
     }
     return analyticsBatches.get(source);
   }
@@ -1377,6 +1378,14 @@
   elements.restorePrompt.addEventListener('click', restorePrompt);
   elements.undoRestore.addEventListener('click', undoPromptRestore);
   elements.promptOutput.addEventListener('input', editPrompt);
+  // Count committed edit sessions, not keystrokes; never inspect clipboard text.
+  elements.promptOutput.addEventListener('change', () => measure('prompt_edited'));
+  elements.promptOutput.addEventListener('input', event => {
+    if (event.inputType === 'insertFromPaste') measure('prompt_pasted');
+  });
+  elements.aiResponse.addEventListener('input', event => {
+    if (event.inputType === 'insertFromPaste') measure('response_pasted');
+  });
   elements.providerLinks.forEach((link) => {
     const provider = PROVIDERS[link.dataset.provider];
     if (!provider) {

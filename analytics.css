@@ -17,3 +17,8 @@
   .analytics-consent { flex-direction: column; }
   .analytics-consent .button { width: 100%; white-space: normal; }
 }
+.analytics-notice { padding: 1rem 1.25rem; margin-block-end: 1.25rem; border: 1px solid #a3c9cc; border-radius: 1.25rem; background: #f0fafb; color: #253c50; grid-column: 1 / -1; min-width: 0; }
+.analytics-notice[hidden] { display: none; }
+.analytics-notice h2 { margin-block: 0 .5rem; font-size: 1.1rem; }
+.analytics-notice p { line-height: 1.8; overflow-wrap: anywhere; }
+.analytics-notice a { display: inline-flex; align-items: center; min-height: 44px; color: #09696b; }

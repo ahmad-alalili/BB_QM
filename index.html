@@ -32,7 +32,7 @@
     <div class="header-tools">
       <label class="layout-picker" for="layout-mode"><span>طريقة العرض</span><select id="layout-mode" aria-describedby="layout-help"><option value="auto" selected>تلقائي حسب الشاشة</option><option value="mobile">نمط الهاتف</option><option value="desktop">نمط الكمبيوتر</option></select></label>
       <p id="layout-help" class="sr-only">تغيير العرض لا يمسح النصوص أو إعدادات الأسئلة. العرض التلقائي يتبع عرض النافذة.</p>
-      <div class="privacy-badge" title="تعالج نصوص الأسئلة محليًا؛ القياس الإحصائي اختياري">
+      <div class="privacy-badge" title="تعالج نصوص الأسئلة محليًا؛ عدّادات الاستخدام إجمالية ويمكن إيقافها">
       <span aria-hidden="true">●</span>
       معالجة محلية
       </div>
@@ -44,6 +44,12 @@
   </noscript>
 
   <main id="main-content" class="page-shell" tabindex="-1">
+    <aside id="analytics-notice" class="analytics-notice" aria-labelledby="analytics-notice-title" hidden>
+      <h2 id="analytics-notice-title">أرقام الاستخدام فقط</h2>
+      <p>يبدأ عدّ الاستخدام الإجمالي تلقائيًا لتحسين الأداة وإعداد تقارير أثرها. نحفظ أعداد الزيارات والعمليات والأسئلة، دون معرّفات زوار أو مواقعهم أو نصوص الأسئلة. يمكنك إيقاف العدّ ومتابعة استخدام الموقع.</p>
+      <p id="analytics-notice-status" role="status"></p>
+      <div class="analytics-consent"><button id="analytics-notice-close" class="button secondary" type="button">فهمت</button><button id="analytics-notice-stop" class="button secondary" type="button">إيقاف العدّ</button><a href="#analytics-privacy">تفاصيل الخصوصية</a></div>
+    </aside>
     <section class="workflow-intro" aria-labelledby="workflow-title">
       <div>
         <p class="eyebrow">مسار العمل</p>
@@ -399,18 +405,20 @@
         <div><dt>ملفات جُهزت للتنزيل</dt><dd id="total-exports_prepared">—</dd></div>
       </dl>
       <p id="analytics-status" role="status" aria-live="polite"></p>
-      <details><summary>الخصوصية والمشاركة في تحسين الأداة</summary>
-        <p>بموافقتك نرسل أعدادًا وأنواع أسئلة وعمليات الاستخدام إلى Cloudflare، دون نصوص الأسئلة أو البرومبت أو الإجابات أو أسماء المستخدمين. نستخدم معرّفًا عشوائيًا مؤقتًا لهذه الصفحة، ونحفظ خيار الموافقة فقط في المتصفح. قد يعالج مزود الاستضافة بيانات الاتصال المعتادة لتقديم الخدمة.</p>
-        <p>هذه الأرقام تبدأ من تفعيل القياس ولا تسترجع الزيارات السابقة. الزيارة ليست شخصًا فريدًا، وتجهيز الملف لا يؤكد حفظه أو استيراده إلى Blackboard. يُحسب تدقيق الدفعة مرة في الصفحة، والتصدير مرة لكل صيغة في الصفحة.</p>
+      <details id="analytics-privacy"><summary>الخصوصية وطريقة حساب الأرقام</summary>
+        <p>نعدّ استخدام الموقع بصورة إجمالية لإعداد تقارير أثر الأداة وتحسينها. تُرسل أسماء عمليات ثابتة وأعداد الأسئلة وأنواعها وصيغة التصدير ورموز الأخطاء العامة إلى Cloudflare، وتُجمع مباشرة في عدّادات يومية؛ لا نحفظ سجلًا لكل عملية ولا معرّفات زوار أو جلسات أو أجهزة أو مواقع جغرافية أو نصوص أسئلة أو برومبت أو إجابات أو قيم درجات.</p>
+        <p>يبدأ العدّ تلقائيًا، مع احترام إيقافه سابقًا وإشارات الخصوصية في المتصفح. نحفظ محليًا تفضيل العدّ وإغلاق هذا الإشعار فقط ضمن نظام الإحصائيات. قد يعالج GitHub وCloudflare بيانات الاتصال المعتادة لتقديم الخدمة؛ لا يضيف التطبيق عناوين IP إلى قاعدة الإحصائيات. نموذج الملاحظات وخدمات الذكاء الاصطناعي خدمات خارجية تخضع لسياساتها عند إرسال البيانات إليها باختيارك.</p>
+        <p>هذه الأرقام تخص نظام العدّ الجديد ولا تسترجع الزيارات السابقة. الزيارة ليست شخصًا فريدًا، وتجهيز الملف لا يؤكد حفظه أو استيراده إلى Blackboard. يُحسب تدقيق الدفعة مرة في الصفحة، وتجهيز الملف مرة لكل صيغة في الصفحة. يُحسب تعديل البرومبت عند إتمام تعديل الحقل ومغادرته، واللصق داخل حقول الأداة فقط؛ لا نرصد ما يحدث داخل مواقع الذكاء الاصطناعي.</p>
+        <p>قد تفوت عمليات بسبب إيقاف العدّ أو الحجب أو انقطاع الاتصال؛ لا نعيد إرسال العملية تلقائيًا تجنبًا لتكرار عدّها. لا تُحذف الإجماليات تلقائيًا بعد 14 يومًا، وتبقى لأغراض تقارير الاستخدام. إيقاف العدّ يمنع الإرسال اللاحق ولا ينقص الإجماليات السابقة. التفاصيل اليومية تبقى داخل حساب Cloudflare المخوّل، ولا ننشر منها هنا إلا الإجماليات الثلاثة.</p>
         <p id="analytics-preference" role="status" aria-live="polite"></p>
-        <div class="analytics-consent"><button id="analytics-allow" class="button secondary" type="button">أوافق على مشاركة الإحصائيات</button><button id="analytics-decline" class="button secondary" type="button">لا أوافق / إيقاف المشاركة</button></div>
+        <div class="analytics-consent"><button id="analytics-allow" class="button secondary" type="button">تفعيل العدّ الإجمالي</button><button id="analytics-decline" class="button secondary" type="button">إيقاف العدّ الإجمالي</button></div>
       </details>
     </section>
   </main>
 
   <footer class="site-footer">
-    <div><strong>منشئ أسئلة Blackboard</strong><span>الإصدار <span id="app-version">2.13.0</span></span></div>
-    <p>تُعالج نصوص الأسئلة محليًا. أزرار الخدمات تنسخ البرومبت وتفتح الموقع فقط؛ لا يُلصق النص ولا يُرسل إلا باختيارك. الإحصائيات اختيارية ولا تتضمن محتوى الأسئلة.</p>
+    <div><strong>منشئ أسئلة Blackboard</strong><span>الإصدار <span id="app-version">2.14.0</span></span></div>
+    <p>تُعالج نصوص الأسئلة محليًا. أزرار الخدمات تنسخ البرومبت وتفتح الموقع فقط؛ لا يُلصق النص ولا يُرسل إلا باختيارك. عدّادات الاستخدام إجمالية ولا تتضمن محتوى الأسئلة، ويمكن إيقافها.</p>
     <div class="footer-credit">
       <p>© 2026 المهندس <strong>أحمد سعيد العليلي</strong><br>جميع الحقوق محفوظة.</p>
       <a class="feedback-link" href="https://forms.cloud.microsoft/r/XcRLkytgSc" target="_blank" rel="noopener noreferrer" aria-describedby="feedback-hint">إرسال الملاحظات والمقترحات</a>
