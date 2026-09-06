@@ -97,7 +97,7 @@ test('entry screen hides all tools before first paint with a readable mobile-fri
   const html=readFileSync(require.resolve('../index.html'),'utf8'), source=readFileSync(require.resolve('../analytics.js'),'utf8');
   const css=readFileSync(require.resolve('../analytics.css'),'utf8');
   assert.match(html,/<section id="analytics-gate"[^>]*aria-labelledby="analytics-notice-title"/);
-  assert.doesNotMatch(html,/<section id="analytics-gate"[^>]*\bhidden\b/);
+  assert.match(html,/<section id="analytics-gate"[^>]*\bhidden\b/);
   assert.match(html,/<div id="site-content" hidden inert>/);
   assert.ok(html.indexOf('id="analytics-gate"') < html.indexOf('id="site-content"'));
   assert.ok(html.indexOf('id="site-content"') < html.indexOf('<header'));
@@ -121,14 +121,14 @@ test('entry screen hides all tools before first paint with a readable mobile-fri
   assert.doesNotMatch(source,/location\.(?:href|replace|assign)\s*[=(]/);
 });
 
-function pageSetup(entries = [], navigator = {}) {
+function pageSetup(entries = [], navigator = {}, storageOverride) {
   const calls=[],stored=new Map(entries),elements=new Map(),focuses=[],scrolls=[];
   const element=id => {
-    if (!elements.has(id)) elements.set(id,{hidden:['site-content','analytics-notice-status'].includes(id),inert:id==='site-content',disabled:['analytics-notice-close','analytics-notice-stop'].includes(id),textContent:'',listeners:{},addEventListener(name,fn){this.listeners[name]=fn;},focus(){focuses.push(id);}});
+    if (!elements.has(id)) elements.set(id,{hidden:['analytics-gate','site-content','analytics-notice-status'].includes(id),inert:id==='site-content',disabled:['analytics-notice-close','analytics-notice-stop'].includes(id),textContent:'',listeners:{},addEventListener(name,fn){this.listeners[name]=fn;},focus(){focuses.push(id);}});
     return elements.get(id);
   };
   const window={navigator,location:{origin:'https://ahmad-alalili.github.io',pathname:'/BB_QM/'},setTimeout,clearTimeout,scrollTo:options=>scrolls.push(options),
-    localStorage:{getItem:key=>stored.get(key),setItem:(key,value)=>stored.set(key,value)},
+    localStorage:storageOverride || {getItem:key=>stored.get(key),setItem:(key,value)=>stored.set(key,value)},
     document:{visibilityState:'visible',getElementById:element,addEventListener(){}},
     fetch:async (url,options)=>{calls.push({url,...options});return new Response(JSON.stringify({ok:true,version:2,mode:'aggregate',since:null,totals:{page_views:0,validated_questions:0,exports_prepared:0}}));}};
   runInNewContext(readFileSync(require.resolve('../analytics.js'),'utf8'),{window,AbortController,Intl});
@@ -184,4 +184,48 @@ test('opening tools never depends on the analytics network and preserves the exi
   await new Promise(resolve=>setImmediate(resolve));
   assert.match(p.element('analytics-status').textContent,/تعذر جلب الإحصائيات/);
   assert.equal(p.element('site-content').hidden,false);
+});
+
+test('saved explicit approval opens subsequent visits directly without focusing or flashing the notice', () => {
+  const first=pageSetup(); first.click('analytics-notice-close');
+  assert.equal(first.stored.get('bb-qm:aggregate-enabled:v2'),'yes');
+  const next=pageSetup([...first.stored]);
+  assert.equal(next.element('analytics-gate').hidden,true);
+  assert.equal(next.element('site-content').hidden,false); assert.equal(next.element('site-content').inert,false);
+  assert.deepEqual(next.focuses,[]); assert.equal(next.scrolls.length,0);
+  assert.equal(next.posts().length,1); assert.equal(next.calls.filter(c=>c.url.endsWith('/public-stats')).length,1);
+  next.window.BBAnalytics.start(); assert.equal(next.posts().length,1);
+});
+
+test('skipping repeats the notice on later visits until approval; withdrawal also restores it', () => {
+  let entries=[];
+  for (let visit=0;visit<3;visit++) {
+    const p=pageSetup(entries); assert.equal(p.element('analytics-gate').hidden,false); assert.equal(p.calls.length,0);
+    p.click('analytics-notice-stop'); assert.equal(p.element('site-content').hidden,false); assert.equal(p.posts().length,0);
+    entries=[...p.stored];
+  }
+  const approval=pageSetup(entries); approval.click('analytics-notice-close');
+  const approvedVisit=pageSetup([...approval.stored]); assert.equal(approvedVisit.element('analytics-gate').hidden,true);
+  approvedVisit.click('analytics-decline'); assert.equal(approvedVisit.element('site-content').hidden,false);
+  const withdrawnVisit=pageSetup([...approvedVisit.stored]);
+  assert.equal(withdrawnVisit.element('analytics-gate').hidden,false); assert.equal(withdrawnVisit.calls.length,0);
+});
+
+test('default yes, old notice dismissal, malformed values and unavailable storage are not saved approval', () => {
+  for (const entries of [[],[['bb-qm:aggregate-notice:v2','seen']],[['bb-qm:measurement-consent:v1','yes']],
+    [['bb-qm:aggregate-enabled:v2','true']],[['bb-qm:aggregate-enabled:v2','']]]) {
+    const p=pageSetup(entries); assert.equal(p.element('analytics-gate').hidden,false); assert.equal(p.calls.length,0);
+  }
+  const blocked={getItem(){throw Error('blocked');},setItem(){throw Error('blocked');}};
+  const p=pageSetup([],{},blocked); p.click('analytics-notice-close');
+  assert.equal(p.element('site-content').hidden,false); assert.equal(p.window.BBAnalytics.hasSavedApproval(),false);
+  const next=pageSetup([],{},blocked); assert.equal(next.element('analytics-gate').hidden,false); assert.equal(next.calls.length,0);
+});
+
+test('saved approval may open the tools but never bypasses browser privacy settings', () => {
+  for (const navigator of [{doNotTrack:'1'},{globalPrivacyControl:true}]) {
+    const p=pageSetup([['bb-qm:aggregate-enabled:v2','yes']],navigator);
+    assert.equal(p.element('analytics-gate').hidden,true); assert.equal(p.element('site-content').hidden,false);
+    assert.equal(p.posts().length,0);
+  }
 });

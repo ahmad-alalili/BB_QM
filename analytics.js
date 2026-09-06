@@ -7,11 +7,11 @@
   const ERRORS = ['syntax','quota','structure','duplicate','points','unsupported_format','size_limit','package','clipboard','unknown'];
   function createAnalytics(env, { waitForNotice = false } = {}) {
     const key = 'bb-qm:aggregate-enabled:v2';
-    let choice = 'yes', viewed = false, sentCount = 0, ready = !waitForNotice;
+    let choice = 'yes', savedChoice = null, viewed = false, sentCount = 0, ready = !waitForNotice;
     const sent = new Set(), active = new Set();
     try {
       const saved = env.localStorage.getItem(key);
-      if (saved === 'yes' || saved === 'no') choice = saved;
+      if (saved === 'yes' || saved === 'no') { choice = saved; savedChoice = saved; }
       else if (env.localStorage.getItem('bb-qm:measurement-consent:v1') === 'no') choice = 'no';
     } catch (_) { /* No persistent tracking state is required. */ }
     const privateMode = () => env.navigator.globalPrivacyControl === true || env.navigator.doNotTrack === '1';
@@ -70,7 +70,7 @@
     function setConsent(value) {
       choice = value === 'yes' ? 'yes' : 'no';
       if (choice === 'no') { for (const controller of active) controller.abort(); active.clear(); }
-      try { env.localStorage.setItem(key,choice); } catch (_) { /* This page still respects the choice. */ }
+      try { env.localStorage.setItem(key,choice); savedChoice = choice; } catch (_) { /* This page still respects the choice. */ }
       start();
     }
     async function totals() {
@@ -88,7 +88,8 @@
       } finally { env.clearTimeout(timer); }
     }
     function resume() { ready = true; start(); }
-    return { track,start,setConsent,totals,resume,status:() => privateMode() ? 'privacy' : !production() ? 'local' : choice };
+    return { track,start,setConsent,totals,resume,hasSavedApproval:() => choice === 'yes' && savedChoice === 'yes',
+      status:() => privateMode() ? 'privacy' : !production() ? 'local' : choice };
   }
   if (typeof module === 'object' && module.exports) { module.exports = { createAnalytics }; return; }
   const client = createAnalytics(root, { waitForNotice:true });
@@ -107,16 +108,18 @@
     byId('analytics-decline').disabled = state === 'no' || state === 'privacy' || state === 'local';
   }
   const gate = byId('analytics-gate'), siteContent = byId('site-content');
-  function dismissNotice() {
-    const openingSite = !gate.hidden;
+  function dismissNotice({ focusContent = true } = {}) {
+    const openingSite = siteContent.hidden;
     gate.hidden = true;
     siteContent.hidden = false;
     siteContent.inert = false;
     client.resume();
     showPreference();
     if (openingSite) {
-      byId('main-content').focus({ preventScroll:true });
-      if (typeof root.scrollTo === 'function') root.scrollTo({ top:0, left:0, behavior:'instant' });
+      if (focusContent) {
+        byId('main-content').focus({ preventScroll:true });
+        if (typeof root.scrollTo === 'function') root.scrollTo({ top:0, left:0, behavior:'instant' });
+      }
       void refresh();
     }
   }
@@ -125,8 +128,8 @@
   byId('analytics-allow').addEventListener('click',approveMeasurement);
   byId('analytics-decline').addEventListener('click',skipMeasurement);
   byId('analytics-notice-stop').addEventListener('click',skipMeasurement);
-  // HTML hides/inerts the tools before first paint. Both choices open the same site.
-  // Show on every load; only explicit approval changes a saved refusal.
+  // Keep both surfaces hidden until preferences load, avoiding a notice flash for prior approval.
+  // Skipping opens this visit only; saved explicit approval opens subsequent visits directly.
   byId('analytics-notice-close').addEventListener('click',approveMeasurement);
   async function refresh() {
     const button = byId('analytics-refresh'); button.disabled = true;
@@ -147,5 +150,9 @@
   showPreference();
   byId('analytics-notice-close').disabled = false;
   byId('analytics-notice-stop').disabled = false;
-  byId('analytics-notice-title').focus({ preventScroll:true });
+  if (client.hasSavedApproval()) dismissNotice({ focusContent:false });
+  else {
+    gate.hidden = false;
+    byId('analytics-notice-title').focus({ preventScroll:true });
+  }
 }(typeof window === 'object' ? window : globalThis));
