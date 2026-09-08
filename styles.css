@@ -1059,7 +1059,17 @@ th {
   font-weight: 800;
 }
 
-.clear-field-button { margin-block-start: 0.45rem; }
+.field-clear-toolbar { display: flex; margin-block: 0.65rem; }
+.button.clear-field-button {
+  min-height: 44px;
+  padding: 0.65rem 1rem;
+  color: #9f1239;
+  background: #fff1f2;
+  border: 1px solid #e79baa;
+  font-weight: 800;
+}
+.button.clear-field-button:hover:not(:disabled) { background: #ffe4e6; border-color: #be123c; }
+.button.clear-field-button:disabled { opacity: 0.65; }
 
 tbody th {
   text-align: start;

@@ -267,7 +267,6 @@
         <div class="action-row prompt-actions">
           <button id="generate-prompt" class="button primary" type="button" aria-describedby="prompt-format-note">إنشاء البرومبت</button>
           <button id="copy-prompt" class="button secondary" type="button" disabled>نسخ البرومبت</button>
-          <button id="clear-prompt" class="button secondary" type="button" disabled>مسح البرومبت</button>
           <button id="restore-prompt" class="button secondary" type="button" disabled>استعادة النسخة المولّدة</button>
           <button id="undo-restore" class="button text-button" type="button" hidden>تراجع عن الاستعادة</button>
         </div>
@@ -275,6 +274,7 @@
 
         <div class="result-block">
           <div class="result-heading"><h3><label for="prompt-output">البرومبت الناتج والقابل للتعديل</label></h3><span id="prompt-length">0 حرف</span></div>
+          <div class="field-clear-toolbar"><button id="clear-prompt" class="button clear-field-button" type="button" disabled>مسح البرومبت</button></div>
           <textarea id="prompt-output" class="prompt-output" rows="18" readonly spellcheck="false" dir="auto" aria-describedby="prompt-editor-help" placeholder="سيظهر البرومبت هنا بعد التحقق من الإعدادات."></textarea>
           <p id="prompt-editor-help" class="field-help">يمكنك تعديل النص بعد إنشائه. عند أي تعديل يدوي يعرض المدقّق إحصاءات الرد لكنه يوقف مقارنة التوزيع تلقائيًا؛ استخدم الحقول أعلاه وأعد التوليد إذا أردت إبقاء تلك المقارنة.</p>
         </div>
@@ -313,8 +313,8 @@
 
         <div class="form-field">
           <label for="ai-response">رد الذكاء الاصطناعي</label>
+          <div class="field-clear-toolbar"><button id="clear-ai-response" class="button clear-field-button" type="button" disabled>مسح رد الذكاء الاصطناعي</button></div>
           <textarea id="ai-response" rows="14" maxlength="2000000" spellcheck="false" aria-describedby="ai-response-help" placeholder="ألصق كتلة الأسئلة هنا: أسطر Tab للأنواع الأساسية، أو JSONL عند استخدام MA أو EO أو JUM أو CALC."></textarea>
-          <button id="clear-ai-response" class="button text-button clear-field-button" type="button" disabled>مسح رد الذكاء الاصطناعي</button>
           <p id="ai-response-help" class="field-help">يكتشف التطبيق الصيغة من رأس JSONL، ويتحقق منفصلًا من مطابقة عدد كل نوع للبرومبت. الحد الأقصى مليونا حرف و250 سؤالًا، وتُرفض الدفعة كاملة عند وجود سجل غير صالح.</p>
         </div>
 
