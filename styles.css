@@ -1063,13 +1063,14 @@ th {
 .button.clear-field-button {
   min-height: 44px;
   padding: 0.65rem 1rem;
-  color: #9f1239;
-  background: #fff1f2;
-  border: 1px solid #e79baa;
+  color: #ffffff;
+  background: #be123c;
+  border: 1px solid #9f1239;
+  box-shadow: 0 3px 10px rgb(159 18 57 / 20%);
   font-weight: 800;
 }
-.button.clear-field-button:hover:not(:disabled) { background: #ffe4e6; border-color: #be123c; }
-.button.clear-field-button:disabled { opacity: 0.65; }
+.button.clear-field-button:hover:not(:disabled) { background: #9f1239; border-color: #881337; }
+.button.clear-field-button:disabled { opacity: 0.6; box-shadow: none; }
 
 tbody th {
   text-align: start;

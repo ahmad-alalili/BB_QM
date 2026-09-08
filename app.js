@@ -47,6 +47,7 @@
   const elements = {
     hasAttachment: byId('has-attachment'),
     sourceContent: byId('source-content'),
+    clearSource: byId('clear-source'),
     additionalInstructions: byId('additional-instructions'),
     simpleModeButton: byId('simple-mode-button'),
     advancedModeButton: byId('advanced-mode-button'),
@@ -656,6 +657,15 @@
     } else {
       setStatus(elements.promptStatus, 'تم تعديل البرومبت، وسيستخدم النسخ النص المعدّل. أُوقفت مقارنة توزيع الرد وبنية الأنواع تلقائيًا؛ راجع الإحصاءات قبل التنزيل.', 'warning');
     }
+  }
+
+  function clearSource() {
+    if (!elements.sourceContent.value) return;
+    elements.sourceContent.value = '';
+    elements.sourceContent.removeAttribute('aria-invalid');
+    elements.clearSource.disabled = true;
+    invalidatePrompt();
+    elements.sourceContent.focus();
   }
 
   function clearPrompt() {
@@ -1486,6 +1496,11 @@
   all('input[name="difficulty-mode"]').forEach((input) => input.addEventListener('change', () => { updateDifficultyUi(); invalidatePrompt(); }));
   elements.singleDifficulty.addEventListener('input', () => { updateDifficultyLabel(); invalidatePrompt(); });
   [elements.sourceContent, elements.additionalInstructions].forEach((input) => input.addEventListener('input', invalidatePrompt));
+  elements.sourceContent.addEventListener('input', () => {
+    elements.clearSource.disabled = elements.sourceContent.value.length === 0;
+  });
+  elements.clearSource.addEventListener('click', clearSource);
+  elements.clearSource.disabled = elements.sourceContent.value.length === 0;
   [elements.hasAttachment, elements.shuffleQuestions, elements.shuffleAnswers, elements.includeReviewNotes].forEach((input) => input.addEventListener('change', invalidatePrompt));
   [elements.progressiveStart, elements.progressiveEnd].forEach((input) => input.addEventListener('change', invalidatePrompt));
   all('input[name="export-format"]').forEach((input) => input.addEventListener('change', () => {
