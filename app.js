@@ -52,6 +52,8 @@
     advancedModeButton: byId('advanced-mode-button'),
     simpleMode: byId('simple-mode'),
     advancedMode: byId('advanced-mode'),
+    simpleCountFill: byId('simple-count-fill'),
+    applySimpleCount: byId('apply-simple-count'),
     questionTotal: byId('question-total'),
     singleDifficulty: byId('single-difficulty'),
     singleDifficultyLabel: byId('single-difficulty-label'),
@@ -76,6 +78,7 @@
     includeReviewNotes: byId('include-review-notes'),
     generatePrompt: byId('generate-prompt'),
     copyPrompt: byId('copy-prompt'),
+    clearPrompt: byId('clear-prompt'),
     restorePrompt: byId('restore-prompt'),
     undoRestore: byId('undo-restore'),
     promptStatus: byId('prompt-status'),
@@ -84,6 +87,7 @@
     promptLength: byId('prompt-length'),
     providerLinks: all('.provider-link'),
     aiResponse: byId('ai-response'),
+    clearAiResponse: byId('clear-ai-response'),
     formatNote: byId('format-note'),
     nativeOptions: byId('native-options'),
     nativeTitle: byId('native-title'),
@@ -346,6 +350,33 @@
     updateReviewNotesAvailability();
   }
 
+  function normalizedBulkCount(input) {
+    const value = Math.trunc(numericValue(input));
+    const minimum = Number(input.min || 0);
+    const maximum = Number(input.max || 25);
+    return Math.max(minimum, Math.min(maximum, value));
+  }
+
+  function applySimpleCount() {
+    const value = normalizedBulkCount(elements.simpleCountFill);
+    elements.simpleCountFill.value = String(value);
+    all('.type-count').forEach((input) => { input.value = String(value); });
+    updateTotals();
+    invalidatePrompt();
+    setStatus(elements.promptStatus, `طُبق العدد ${value} على جميع أنواع الأسئلة في الوضع البسيط.`, 'success');
+  }
+
+  function applyMatrixColumn(level) {
+    const fill = document.querySelector(`.matrix-column-fill[data-level="${level}"]`);
+    if (!fill) return;
+    const value = normalizedBulkCount(fill);
+    fill.value = String(value);
+    all(`.matrix-cell[data-level="${level}"]`).forEach((input) => { input.value = String(value); });
+    updateTotals();
+    invalidatePrompt();
+    setStatus(elements.promptStatus, `طُبق العدد ${value} على جميع الأنواع في عمود الصعوبة المحدد.`, 'success');
+  }
+
   function updateDifficultyUi() {
     const selected = document.querySelector('input[name="difficulty-mode"]:checked').value;
     ['single', 'mixed', 'progressive'].forEach((mode) => {
@@ -427,6 +458,7 @@
     const usable = hasUsablePrompt();
     elements.promptLength.textContent = `${currentPrompt.length.toLocaleString('ar')} حرف`;
     elements.copyPrompt.disabled = !usable || clipboardBusy;
+    elements.clearPrompt.disabled = currentPrompt.length === 0 || clipboardBusy;
     elements.restorePrompt.disabled = !generatedBasePrompt
       || currentPrompt === generatedBasePrompt
       || clipboardBusy;
@@ -624,6 +656,37 @@
     } else {
       setStatus(elements.promptStatus, 'تم تعديل البرومبت، وسيستخدم النسخ النص المعدّل. أُوقفت مقارنة توزيع الرد وبنية الأنواع تلقائيًا؛ راجع الإحصاءات قبل التنزيل.', 'warning');
     }
+  }
+
+  function clearPrompt() {
+    if (!currentPrompt || clipboardBusy) return;
+    currentPrompt = '';
+    requestedCounts = null;
+    requestedQuestionSettings = null;
+    restoredDraft = null;
+    promptRevision += 1;
+    elements.promptOutput.value = '';
+    elements.promptOutput.readOnly = !generatedBasePrompt;
+    elements.undoRestore.hidden = true;
+    updatePromptControls();
+    setStatus(
+      elements.promptStatus,
+      generatedBasePrompt ? 'تم مسح البرومبت. يمكنك استعادة آخر نسخة مولّدة.' : 'تم مسح البرومبت.',
+      'warning',
+    );
+  }
+
+  function clearAiResponse() {
+    if (!elements.aiResponse.value) return;
+    elements.aiResponse.value = '';
+    elements.clearAiResponse.disabled = true;
+    clearPointsDraft();
+    renderIssues([], [], []);
+    renderStats([]);
+    renderPreview([]);
+    updateFormatNote();
+    setStatus(elements.exportStatus, 'تم مسح رد الذكاء الاصطناعي.', 'warning');
+    elements.aiResponse.focus();
   }
 
   function restorePrompt() {
@@ -890,20 +953,91 @@
 
   function renderPreview(questions) {
     elements.previewList.replaceChildren();
-    questions.slice(0, 5).forEach((question) => {
+    questions.forEach((question, index) => {
       const item = document.createElement('li');
       item.className = 'preview-item';
       const badge = document.createElement('span');
       badge.className = 'type-badge';
-      badge.textContent = question.type;
+      badge.textContent = `${index + 1} · ${question.type}`;
       const text = document.createElement('p');
       text.className = 'question-preview';
       text.dir = 'auto';
       text.textContent = question.question;
       item.append(badge, text);
+      const details = document.createElement('div');
+      details.className = 'preview-answers';
+      const add = (label, value, correct = false) => {
+        const row = document.createElement('p');
+        row.className = correct ? 'preview-answer correct-answer' : 'preview-answer';
+        const heading = document.createElement('strong');
+        heading.textContent = `${label}: `;
+        const content = document.createElement('span');
+        content.dir = 'auto';
+        content.textContent = String(value);
+        row.append(heading, content);
+        details.appendChild(row);
+      };
+      if (question.type === 'MC' || question.type === 'MA') {
+        question.choices.forEach((choice, choiceIndex) => {
+          const credit = question.partialCredit ? ` — ${choice.percent}% من نقاط السؤال` : '';
+          const levels = { most_correct: 'الأكثر صحة', correct: 'صحيحة', least_correct: 'الأقل صحة' };
+          const status = choice.correct ? (levels[choice.creditLevel] || 'إجابة صحيحة') : 'إجابة خاطئة';
+          add(`الخيار ${choiceIndex + 1} — ${status}${credit}`, choice.text, choice.correct);
+        });
+        if (question.type === 'MA') {
+          add('حد اختيار الطالب', question.selectionLimit);
+          add('التصحيح', question.partialCredit ? 'رصيد جزئي حسب النسب الموضحة' : 'مجموعة الإجابات الصحيحة كاملة');
+        }
+      } else if (question.type === 'TF') {
+        add('الخيارات', 'صواب / خطأ');
+        add('الإجابة الصحيحة', question.answer ? 'صواب' : 'خطأ', true);
+      } else if (question.type === 'ESS') {
+        add('إجابة نموذجية للمراجعة', question.exampleAnswer || 'لم تُرفق إجابة نموذجية');
+        add('التصحيح', 'يدوي وفق معايير يحددها المدرّب');
+      } else if (question.type === 'FIB') {
+        question.answers.forEach((answer) => add('إجابة مقبولة', answer, true));
+      } else if (question.type === 'MAT') {
+        question.pairs.forEach((pair, pairIndex) => add(`الزوج ${pairIndex + 1} — ${pair.prompt}`, pair.match, true));
+        (question.distractors || []).forEach((answer) => add('إجابة خاطئة إضافية', answer));
+      } else if (question.type === 'EO') {
+        const pairs = { true_false: ['صواب', 'خطأ'], yes_no: ['نعم', 'لا'], correct_incorrect: ['صحيح', 'غير صحيح'], agree_disagree: ['أوافق', 'لا أوافق'] };
+        const pair = pairs[question.pair];
+        add('الخيارات', pair.join(' / '));
+        add('الإجابة الصحيحة', pair[question.answer === 'first' ? 0 : 1], true);
+      } else if (question.type === 'JUM') {
+        question.slots.forEach((slot) => {
+          add(`القائمة [[${slot.id}]] — الإجابة الصحيحة`, slot.answer, true);
+          slot.distractors.forEach((answer) => add(`القائمة [[${slot.id}]] — إجابة خاطئة`, answer));
+        });
+      } else if (question.type === 'NUM' || question.type === 'CALC') {
+        add('الإجابة الصحيحة', question.answer, true);
+        add('هامش الخطأ', question.tolerance);
+        if (question.type === 'CALC') {
+          add('المعادلة الثابتة', question.formula);
+          add('المنازل العشرية', question.decimals);
+          add('حدود هذا النوع', 'قيم ثابتة؛ لا ينشئ مسائل بمتغيرات عشوائية');
+        }
+      }
+      const points = document.createElement('p');
+      points.className = 'preview-points field-help';
+      points.dataset.previewPoints = String(index);
+      points.dataset.originalPoints = String(question.points == null ? 1 : question.points);
+      details.appendChild(points);
+      item.appendChild(details);
       elements.previewList.appendChild(item);
     });
+    syncPreviewPoints();
+    document.getElementById('preview-count').textContent = `${questions.length} سؤالًا — جميع الأسئلة`;
     elements.previewSection.hidden = questions.length === 0;
+  }
+
+  function syncPreviewPoints() {
+    all('[data-preview-points]', elements.previewList).forEach((row) => {
+      const value = pointsDraft && pointsDraft.source === elements.aiResponse.value
+        ? pointsDraft.values[Number(row.dataset.previewPoints)] : row.dataset.originalPoints;
+      row.textContent = !formatHasPoints(selectedFormat()) ? 'TXT لا ينقل النقاط المخصصة؛ اضبطها داخل Blackboard.'
+        : core.parsePointValue(value) === null ? 'النقاط غير صالحة؛ صححها في محرر النقاط.' : `نقاط السؤال: ${value}`;
+    });
   }
 
   function clearPointsDraft() {
@@ -918,6 +1052,7 @@
   }
 
   function updatePointsTotal() {
+    syncPreviewPoints();
     if (!pointsDraft || pointsDraft.source !== elements.aiResponse.value) {
       elements.pointsTotal.value = '0';
       elements.pointsTotal.textContent = '0';
@@ -1320,6 +1455,8 @@
     invalidatePrompt();
   });
   all('.type-count, .mix-count, .matrix-cell').forEach((input) => input.addEventListener('input', () => { updateTotals(); invalidatePrompt(); }));
+  elements.applySimpleCount.addEventListener('click', applySimpleCount);
+  all('.matrix-fill-button').forEach((button) => button.addEventListener('click', () => applyMatrixColumn(button.dataset.level)));
   all('.structure-setting:not([type="checkbox"])').forEach((input) => input.addEventListener('input', () => {
     if (input === elements.maChoiceCount) {
       const correctChanged = syncMultipleAnswerLimits();
@@ -1357,6 +1494,7 @@
     if (elements.aiResponse.value.trim() && !elements.stats.hidden) validateResponse();
   }));
   elements.aiResponse.addEventListener('input', () => {
+    elements.clearAiResponse.disabled = elements.aiResponse.value.length === 0;
     const discardedPoints = Boolean(pointsDraft);
     clearPointsDraft();
     renderIssues([], [], []);
@@ -1375,6 +1513,7 @@
   elements.downloadReviewed.addEventListener('click', exportResponse);
   elements.generatePrompt.addEventListener('click', generatePrompt);
   elements.copyPrompt.addEventListener('click', copyPrompt);
+  elements.clearPrompt.addEventListener('click', clearPrompt);
   elements.restorePrompt.addEventListener('click', restorePrompt);
   elements.undoRestore.addEventListener('click', undoPromptRestore);
   elements.promptOutput.addEventListener('input', editPrompt);
@@ -1386,6 +1525,7 @@
   elements.aiResponse.addEventListener('input', event => {
     if (event.inputType === 'insertFromPaste') measure('response_pasted');
   });
+  elements.clearAiResponse.addEventListener('click', clearAiResponse);
   elements.providerLinks.forEach((link) => {
     const provider = PROVIDERS[link.dataset.provider];
     if (!provider) {

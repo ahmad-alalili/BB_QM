@@ -183,6 +183,23 @@ test('every supported question type has simple and advanced controls', () => {
   });
 });
 
+test('bulk count controls and clear buttons are wired accessibly', () => {
+  const html = read('index.html');
+  const app = read('app.js');
+  assert.match(html, /id="simple-count-fill"[^>]*value="0"/);
+  assert.match(html, /id="apply-simple-count"/);
+  for (const level of ['easy', 'medium', 'hard', 'expert']) {
+    assert.match(html, new RegExp(`class="matrix-column-fill" data-level="${level}"`));
+    assert.match(html, new RegExp(`class="matrix-fill-button" data-level="${level}"`));
+  }
+  assert.match(html, /id="clear-prompt"[^>]*disabled/);
+  assert.match(html, /id="clear-ai-response"[^>]*disabled/);
+  assert.match(app, /function applySimpleCount\(\)/);
+  assert.match(app, /function applyMatrixColumn\(level\)/);
+  assert.match(app, /function clearPrompt\(\)/);
+  assert.match(app, /function clearAiResponse\(\)/);
+});
+
 test('question structure controls expose matching extras, smart MA credit rows, and dropdown distractors', () => {
   const html = read('index.html');
   const app = read('app.js');

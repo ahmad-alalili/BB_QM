@@ -595,6 +595,26 @@ fieldset > legend {
   gap: 0.65rem;
 }
 
+.count-fill-toolbar {
+  display: flex;
+  align-items: end;
+  gap: 0.7rem;
+  padding: 0.75rem;
+  margin-block-end: 0.75rem;
+  background: rgb(255 255 255 / 48%);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-small);
+}
+
+.count-fill-toolbar label {
+  display: grid;
+  gap: 0.35rem;
+  font-size: 0.78rem;
+  font-weight: 800;
+}
+
+.count-fill-toolbar input { width: 7rem; }
+
 .count-card {
   display: flex;
   align-items: center;
@@ -1010,6 +1030,36 @@ td {
 th {
   background: rgb(225 235 241 / 70%);
 }
+
+.matrix-fill-label {
+  display: grid;
+  gap: 0.2rem;
+  margin-block-start: 0.35rem;
+  color: var(--ink-soft);
+  font-size: 0.66rem;
+  font-weight: 700;
+}
+
+.matrix-fill-label input {
+  width: 4rem !important;
+  min-height: 2rem !important;
+  margin-inline: auto;
+}
+
+.matrix-fill-button {
+  min-height: 1.9rem;
+  padding: 0.25rem 0.5rem;
+  margin-block-start: 0.3rem;
+  color: var(--green-dark);
+  background: rgb(255 255 255 / 82%);
+  border: 1px solid var(--glass-border);
+  border-radius: 8px;
+  font: inherit;
+  font-size: 0.68rem;
+  font-weight: 800;
+}
+
+.clear-field-button { margin-block-start: 0.45rem; }
 
 tbody th {
   text-align: start;
@@ -1474,6 +1524,22 @@ tfoot output,
   font-size: 0.84rem;
   unicode-bidi: plaintext;
 }
+
+.preview-answers {
+  grid-column: 1 / -1;
+  min-width: 0;
+}
+.preview-answer {
+  margin: 0.4rem 0;
+  padding: 0.6rem;
+  border: 1px solid var(--glass-border);
+  border-radius: 9px;
+  overflow-wrap: anywhere;
+  white-space: pre-wrap;
+}
+.preview-answer span { unicode-bidi: isolate; }
+.correct-answer { background: rgb(210 247 242 / 65%); }
+.question-preview { white-space: pre-wrap; }
 
 .guide {
   display: grid;

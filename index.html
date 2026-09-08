@@ -118,7 +118,7 @@
               <p class="eyebrow">التوزيع</p>
               <h3 id="editor-mode-title">أنواع الأسئلة وصعوبتها</h3>
             </div>
-            <output id="question-total" class="total-pill" tabindex="-1" aria-live="polite">8 أسئلة</output>
+            <output id="question-total" class="total-pill" tabindex="-1" aria-live="polite">0 أسئلة</output>
           </div>
 
           <div class="segmented" role="group" aria-label="نمط توزيع الأسئلة">
@@ -127,9 +127,13 @@
           </div>
 
           <div id="simple-mode">
+            <div class="count-fill-toolbar" aria-label="تعيين عدد موحد لجميع أنواع الأسئلة">
+              <label for="simple-count-fill">عدد موحّد لكل نوع<input id="simple-count-fill" type="number" min="0" max="25" step="1" value="0" inputmode="numeric"></label>
+              <button id="apply-simple-count" class="button secondary compact" type="button">تطبيق على جميع الأنواع</button>
+            </div>
             <div class="type-grid">
-              <label class="count-card" for="count-MC"><span><b>MC</b> اختيار من متعدد</span><input id="count-MC" class="type-count" data-type="MC" type="number" min="0" max="50" step="1" value="5"></label>
-              <label class="count-card" for="count-TF"><span><b>TF</b> صح أو خطأ</span><input id="count-TF" class="type-count" data-type="TF" type="number" min="0" max="50" step="1" value="3"></label>
+              <label class="count-card" for="count-MC"><span><b>MC</b> اختيار من متعدد</span><input id="count-MC" class="type-count" data-type="MC" type="number" min="0" max="50" step="1" value="0"></label>
+              <label class="count-card" for="count-TF"><span><b>TF</b> صح أو خطأ</span><input id="count-TF" class="type-count" data-type="TF" type="number" min="0" max="50" step="1" value="0"></label>
               <label class="count-card" for="count-ESS"><span><b>ESS</b> مقالي</span><input id="count-ESS" class="type-count" data-type="ESS" type="number" min="0" max="50" step="1" value="0"></label>
               <label class="count-card" for="count-FIB"><span><b>FIB</b> ملء الفراغ</span><input id="count-FIB" class="type-count" data-type="FIB" type="number" min="0" max="50" step="1" value="0"></label>
               <label class="count-card" for="count-NUM"><span><b>NUM</b> إجابة رقمية</span><input id="count-NUM" class="type-count" data-type="NUM" type="number" min="0" max="50" step="1" value="0"></label>
@@ -162,7 +166,7 @@
                   <label for="mix-hard">صعب<input id="mix-hard" class="mix-count" data-level="hard" type="number" min="0" max="50" step="1" value="0"></label>
                   <label for="mix-expert">صعب جدًا<input id="mix-expert" class="mix-count" data-level="expert" type="number" min="0" max="50" step="1" value="0"></label>
                 </div>
-                <output id="mixed-total" class="inline-total" tabindex="-1" aria-live="polite">0 من 8</output>
+                <output id="mixed-total" class="inline-total" tabindex="-1" aria-live="polite">0 من 0</output>
               </div>
 
               <div id="difficulty-progressive" class="difficulty-panel" hidden>
@@ -179,7 +183,7 @@
             <div class="table-scroll" tabindex="0" aria-label="جدول توزيع نوع السؤال حسب الصعوبة">
               <table>
                 <caption class="sr-only">توزيع عدد الأسئلة حسب النوع ومستوى الصعوبة</caption>
-                <thead><tr><th scope="col">النوع</th><th scope="col">سهل</th><th scope="col">متوسط</th><th scope="col">صعب</th><th scope="col">صعب جدًا</th><th scope="col">المجموع</th></tr></thead>
+                <thead><tr><th scope="col">النوع</th><th scope="col"><span>سهل</span><label class="matrix-fill-label" for="fill-easy">عدد موحّد<input id="fill-easy" class="matrix-column-fill" data-level="easy" type="number" min="0" max="25" step="1" value="0" inputmode="numeric"></label><button class="matrix-fill-button" data-level="easy" type="button">تطبيق</button></th><th scope="col"><span>متوسط</span><label class="matrix-fill-label" for="fill-medium">عدد موحّد<input id="fill-medium" class="matrix-column-fill" data-level="medium" type="number" min="0" max="25" step="1" value="0" inputmode="numeric"></label><button class="matrix-fill-button" data-level="medium" type="button">تطبيق</button></th><th scope="col"><span>صعب</span><label class="matrix-fill-label" for="fill-hard">عدد موحّد<input id="fill-hard" class="matrix-column-fill" data-level="hard" type="number" min="0" max="25" step="1" value="0" inputmode="numeric"></label><button class="matrix-fill-button" data-level="hard" type="button">تطبيق</button></th><th scope="col"><span>صعب جدًا</span><label class="matrix-fill-label" for="fill-expert">عدد موحّد<input id="fill-expert" class="matrix-column-fill" data-level="expert" type="number" min="0" max="25" step="1" value="0" inputmode="numeric"></label><button class="matrix-fill-button" data-level="expert" type="button">تطبيق</button></th><th scope="col">المجموع</th></tr></thead>
                 <tbody>
                   <tr data-row-type="MC"><th scope="row">MC — اختيار</th><td><input class="matrix-cell" data-type="MC" data-level="easy" aria-label="اختيار من متعدد سهل" type="number" min="0" max="50" value="0"></td><td><input class="matrix-cell" data-type="MC" data-level="medium" aria-label="اختيار من متعدد متوسط" type="number" min="0" max="50" value="0"></td><td><input class="matrix-cell" data-type="MC" data-level="hard" aria-label="اختيار من متعدد صعب" type="number" min="0" max="50" value="0"></td><td><input class="matrix-cell" data-type="MC" data-level="expert" aria-label="اختيار من متعدد صعب جدًا" type="number" min="0" max="50" value="0"></td><td><output class="row-total" data-type="MC">0</output></td></tr>
                   <tr data-row-type="TF"><th scope="row">TF — صح/خطأ</th><td><input class="matrix-cell" data-type="TF" data-level="easy" aria-label="صح أو خطأ سهل" type="number" min="0" max="50" value="0"></td><td><input class="matrix-cell" data-type="TF" data-level="medium" aria-label="صح أو خطأ متوسط" type="number" min="0" max="50" value="0"></td><td><input class="matrix-cell" data-type="TF" data-level="hard" aria-label="صح أو خطأ صعب" type="number" min="0" max="50" value="0"></td><td><input class="matrix-cell" data-type="TF" data-level="expert" aria-label="صح أو خطأ صعب جدًا" type="number" min="0" max="50" value="0"></td><td><output class="row-total" data-type="TF">0</output></td></tr>
@@ -258,10 +262,12 @@
         </fieldset>
 
         </details>
+        <p class="field-help">التزم بسياسات المؤسسة عند استخدام خدمات الذكاء الاصطناعي الخارجية. لا ترسل بيانات المتدربين أو المحتوى السري إليها دون تصريح.</p>
         <p id="prompt-format-note" class="field-help" role="note" aria-live="polite">اختر بنك Blackboard الأصلي لحفظ الأسئلة ونقاطها في بنك مستقل عن اختبار المقرر المباشر.</p>
         <div class="action-row prompt-actions">
           <button id="generate-prompt" class="button primary" type="button" aria-describedby="prompt-format-note">إنشاء البرومبت</button>
           <button id="copy-prompt" class="button secondary" type="button" disabled>نسخ البرومبت</button>
+          <button id="clear-prompt" class="button secondary" type="button" disabled>مسح البرومبت</button>
           <button id="restore-prompt" class="button secondary" type="button" disabled>استعادة النسخة المولّدة</button>
           <button id="undo-restore" class="button text-button" type="button" hidden>تراجع عن الاستعادة</button>
         </div>
@@ -308,6 +314,7 @@
         <div class="form-field">
           <label for="ai-response">رد الذكاء الاصطناعي</label>
           <textarea id="ai-response" rows="14" maxlength="2000000" spellcheck="false" aria-describedby="ai-response-help" placeholder="ألصق كتلة الأسئلة هنا: أسطر Tab للأنواع الأساسية، أو JSONL عند استخدام MA أو EO أو JUM أو CALC."></textarea>
+          <button id="clear-ai-response" class="button text-button clear-field-button" type="button" disabled>مسح رد الذكاء الاصطناعي</button>
           <p id="ai-response-help" class="field-help">يكتشف التطبيق الصيغة من رأس JSONL، ويتحقق منفصلًا من مطابقة عدد كل نوع للبرومبت. الحد الأقصى مليونا حرف و250 سؤالًا، وتُرفض الدفعة كاملة عند وجود سجل غير صالح.</p>
         </div>
 
@@ -328,6 +335,12 @@
         </fieldset>
 
         <div id="format-note" class="info-note" role="note" aria-live="polite" aria-atomic="true">بنك Blackboard الأصلي يحفظ نقاط الأسئلة في حزمة بنك مستقلة عن اختبار المقرر المباشر.</div>
+        <details class="optional-details">
+          <summary>حدود التصدير والمراجعة قبل الاعتماد</summary>
+          <p class="field-help">البنك الأصلي يحفظ الأسئلة ونقاطها لإعادة الاستخدام. الاختبار المباشر حزمة مختلفة وتجريبية؛ جرّبها داخل مقرر تجريبي في بيئة الكلية. TXT يدعم MC وTF وESS وFIB وNUM وMAT ولا ينقل النقاط المخصصة أو مشتتات المطابقة الإضافية. البنك الأصلي ليس حزمة QTI 2.1 القياسية.</p>
+          <p class="field-help">CALC يستخدم معادلات بقيم ثابتة، وليس مسائل بمتغيرات عشوائية. نجاح التدقيق التنسيقي لا يثبت صحة المحتوى أو مستوى الصعوبة؛ راجع كل سؤال وإجابته وارتباطه بمخرجات التعلم.</p>
+          <p class="field-help">بعد الاستيراد اختبر عرض العربية والخيارات والإجابات الصحيحة والنقاط والتصحيح الجزئي بمحاولات تجريبية، وقارن النتيجة الفعلية بالمتوقعة قبل إتاحة الاختبار للمتدربين.</p>
+        </details>
 
         <div id="bank-options" class="native-options form-field">
           <label for="bank-title">اسم بنك الأسئلة</label>
@@ -388,7 +401,8 @@
         </section>
 
         <section id="preview-section" class="preview-section" aria-labelledby="preview-title" hidden>
-          <div class="result-heading"><h3 id="preview-title">معاينة آمنة</h3><span>أول 5 أسئلة</span></div>
+          <div class="result-heading"><h3 id="preview-title">معاينة جميع الأسئلة والإجابات</h3><span id="preview-count"></span></div>
+          <p class="field-help">راجع النصوص والخيارات والإجابات المحددة قبل التنزيل. هذه معاينة بيانات الأسئلة؛ تحقّق أيضًا من عرضها وتصحيحها داخل Blackboard.</p>
           <ol id="preview-list"></ol>
         </section>
         <div class="mobile-step-action"><button id="back-to-prompt" class="button secondary" type="button">العودة إلى إعداد الأسئلة</button></div>
@@ -399,9 +413,10 @@
       <div>
         <p class="eyebrow">قبل الرفع</p>
         <h2 id="guide-title">قائمة تحقق قصيرة</h2>
+        <p><a href="docs/Blackboard-User-Guide-2.0-Arabic-Reviewed.pdf" download>تنزيل دليل المستخدم المحدّث (PDF)</a></p>
       </div>
       <div class="guide-grid">
-        <article><span aria-hidden="true">1</span><h3>راجع المحتوى</h3><p>تأكد أن كل إجابة موجودة في المادة، وأن الأسئلة لا تتبع تعليمات مضمنة داخل ملف مرجعي.</p></article>
+        <article><span aria-hidden="true">1</span><h3>راجع المحتوى</h3><p>راجع صحة الأسئلة وإجاباتها علميًا وتربويًا وارتباطها بمخرجات التعلم. نجاح التدقيق التنسيقي لا يثبت صحة المحتوى أو مستوى الصعوبة.</p></article>
         <article><span aria-hidden="true">2</span><h3>اختر المسار الصحيح</h3><p>استخدم بنك Blackboard الأصلي لبنك الأسئلة، أو اختبار داخل المقرر لإدراج اختبار مباشر بلا بنك. راجع النقاط قبل التنزيل؛ ويبقى TXT متاحًا لرفع الأسئلة النصي.</p></article>
         <article><span aria-hidden="true">3</span><h3>اختبر عينة</h3><p>استورد بضعة أسئلة أولًا وراجع النص والإجابات والدرجات قبل رفع دفعة كبيرة.</p></article>
       </div>
