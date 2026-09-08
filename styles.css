@@ -1572,6 +1572,27 @@ tfoot output,
   color: #fff;
 }
 
+.guide-download,
+.guide-download:visited {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 44px;
+  max-width: 100%;
+  padding: 0.7rem 1rem;
+  border: 2px solid #ffffff;
+  border-radius: 12px;
+  color: #12344b;
+  background: #ffffff;
+  font-weight: 800;
+  line-height: 1.6;
+  text-decoration: none;
+  text-align: center;
+  overflow-wrap: anywhere;
+}
+.guide-download:hover { color: #12344b; background: #dff7f4; }
+.guide-download:focus-visible { outline: 3px solid #facc15; outline-offset: 4px; }
+
 .guide-grid {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
