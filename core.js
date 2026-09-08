@@ -8,7 +8,7 @@
   'use strict';
 
   const VERSION = '2.16.2';
-  const DISPLAY_VERSION = '2.0';
+  const DISPLAY_VERSION = '2.1';
   const LEGACY_TSV_TYPES = Object.freeze(['MC', 'TF', 'ESS', 'FIB', 'NUM', 'MAT']);
   const NATIVE_JSONL_TYPES = Object.freeze(['MC', 'TF', 'ESS', 'FIB', 'NUM', 'MAT', 'MA', 'EO', 'JUM', 'CALC']);
   const TYPE_ORDER = NATIVE_JSONL_TYPES;
