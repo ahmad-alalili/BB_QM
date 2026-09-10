@@ -1059,6 +1059,12 @@ th {
   font-weight: 800;
 }
 
+.source-options, .bulk-types-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 210px), 1fr)); gap: 0.85rem; }
+.source-options .form-field { min-width: 0; }
+.bulk-types-fieldset { margin-block: 1rem; padding: 1rem; border: 1px solid var(--glass-border); border-radius: 14px; min-width: 0; }
+.bulk-types-grid { margin-block-start: 0.8rem; }
+.bulk-types-grid label { display: flex; align-items: center; gap: 0.5rem; min-height: 44px; font-size: 0.875rem; }
+.bulk-types-grid input { flex: 0 0 auto; }
 .field-clear-toolbar { display: flex; margin-block: 0.65rem; }
 .button.clear-field-button {
   min-height: 44px;

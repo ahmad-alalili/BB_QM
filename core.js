@@ -380,6 +380,26 @@
     };
   }
 
+  function normalizedSourcePages(value) {
+    const text = String(value == null ? '' : value).trim()
+      .replace(/[٠-٩]/g, (digit) => String('٠١٢٣٤٥٦٧٨٩'.indexOf(digit)))
+      .replace(/[۰-۹]/g, (digit) => String('۰۱۲۳۴۵۶۷۸۹'.indexOf(digit)))
+      .replace(/،/g, ',').replace(/[–—]/g, '-');
+    if (!text) return '';
+    if (text.length > 500) return null;
+    const ranges = text.split(',').map((part) => part.trim());
+    const normalized = [];
+    for (const range of ranges) {
+      const match = /^(\d{1,5})(?:\s*-\s*(\d{1,5}))?$/.exec(range);
+      if (!match) return null;
+      const start = Number(match[1]);
+      const end = match[2] == null ? start : Number(match[2]);
+      if (start < 1 || end < start) return null;
+      normalized.push(start === end ? String(start) : `${start}-${end}`);
+    }
+    return normalized.join(', ');
+  }
+
   function validatePromptConfig(config) {
     const errors = [];
     const counts = config && config.counts ? config.counts : {};
@@ -457,6 +477,15 @@
     const sourceContent = String((config && config.sourceContent) || '').trim();
     const additionalInstructions = String((config && config.additionalInstructions) || '').trim();
     const hasAttachment = Boolean(config && config.hasAttachment);
+    if (!['ar', 'en', 'source'].includes((config && config.questionLanguage) || 'ar')) {
+      errors.push('اختر لغة الأسئلة من الخيارات المتاحة.');
+    }
+    if (!['file', 'book'].includes((config && config.pageNumbering) || 'file')) {
+      errors.push('اختر طريقة ترقيم الصفحات من الخيارات المتاحة.');
+    }
+    if (normalizedSourcePages(config && config.sourcePages) === null) {
+      errors.push('الصفحات المطلوبة غير صالحة. استخدم أرقامًا موجبة ونطاقًا تصاعديًا مثل 3, 7, 10-15، وبحد أقصى 500 حرف.');
+    }
 
     if (!sourceContent && !hasAttachment) {
       errors.push('ألصق المادة الدراسية أو فعّل خيار وجود ملف مرفق.');
@@ -677,6 +706,17 @@
 
     const source = protectPromptBoundary(config.sourceContent, 'SOURCE_MATERIAL');
     const userInstructions = protectPromptBoundary(config.additionalInstructions, 'USER_REQUIREMENTS');
+    const languageInstruction = {
+      ar: 'اكتب جميع نصوص الأسئلة والخيارات والإجابات النموذجية باللغة العربية.',
+      en: 'Write all question texts, answer choices and model answers in English only.',
+      source: 'اكتب الأسئلة والخيارات والإجابات بلغة المصدر. إذا تعددت لغاته ولم تتضح اللغة المقصودة، اطلب تحديدها قبل التوليد.',
+    }[config.questionLanguage || 'ar'];
+    const sourcePages = normalizedSourcePages(config.sourcePages);
+    const pageInstruction = sourcePages ? `الصفحات المطلوبة حصريًا: ${sourcePages}.
+${config.pageNumbering === 'book'
+      ? 'اعتمد الأرقام المطبوعة داخل الكتاب، وليس ترتيب صفحات الملف. لا تفترض فرقًا ثابتًا بين الترقيمين؛ تحقق من الرقم المطبوع لكل صفحة مطلوبة.'
+      : 'اعتمد ترتيب صفحات الملف ابتداءً من 1: الغلاف صفحة 1 والفهرس صفحة 2 إذا كان ثاني صفحة، وتُحسب الصفحات غير المرقمة أيضًا. لا تستخدم الأرقام المطبوعة داخل الكتاب.'}
+استخرج الأسئلة من هذه الصفحات فقط. إذا لم تستطع تحديد الصفحات أو قراءة أرقامها أو كانت خارج الملف أو لم يحتو النص الملصق على حدود صفحات واضحة، توقف واطلب الاستيضاح بدل التخمين. لا تستخدم صفحات أخرى لتعويض نقص المحتوى.` : 'استخدم المصدر كاملًا؛ لا يوجد تقييد بصفحات محددة.';
     const options = config.options || {};
     const optionLines = [
       options.shuffleQuestions && config.difficulty.mode !== 'progressive' ? '- نوّع ترتيب الأنواع ولا تجمعها في كتل.' : '',
@@ -701,6 +741,10 @@ ${source || (config.hasAttachment ? '[المادة موجودة في الملف�
 </SOURCE_MATERIAL>
 
 <USER_REQUIREMENTS>
+لغة الإخراج (لا تغيّر رموز الأنواع أو أسماء حقول JSONL أو true/false أو الصيغ الرقمية):
+${languageInstruction}
+نطاق المصدر:
+${pageInstruction}
 ${userInstructions || '[لا توجد تعليمات إضافية]'}
 </USER_REQUIREMENTS>
 

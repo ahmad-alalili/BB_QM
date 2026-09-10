@@ -104,6 +104,21 @@
             <p id="source-content-help" class="field-help">لن ترسل الصفحة هذا النص تلقائيًا. عند نسخ البرومبت ولصقه في خدمة ذكاء اصطناعي، سينتقل النص إليها باختيارك.</p>
           </div>
 
+          <div class="source-options">
+            <div class="form-field">
+              <label for="question-language">لغة الأسئلة والإجابات</label>
+              <select id="question-language"><option value="ar">العربية</option><option value="en">الإنجليزية</option><option value="source">لغة المصدر</option></select>
+            </div>
+            <div class="form-field">
+              <label for="source-pages">الصفحات المطلوبة (اختياري)</label>
+              <input id="source-pages" type="text" maxlength="500" dir="ltr" placeholder="3, 7, 10-15" aria-describedby="source-pages-help">
+            </div>
+            <div class="form-field">
+              <label for="page-numbering">طريقة ترقيم الصفحات</label>
+              <select id="page-numbering" aria-describedby="source-pages-help"><option value="file">حسب ترتيب الصفحات في الملف</option><option value="book">حسب الأرقام المطبوعة داخل الكتاب</option></select>
+            </div>
+          </div>
+          <p id="source-pages-help" class="field-help">اترك الصفحات فارغة لاستخدام المصدر كاملًا. ترتيب الملف يبدأ من 1 ويشمل الغلاف والفهرس؛ ترقيم الكتاب هو الرقم المطبوع على الصفحة. يُضاف اختيارك إلى البرومبت؛ أرفق الملف في محادثة الذكاء الاصطناعي، أو ألصق نصًا يوضح حدود الصفحات وأرقامها. إذا تعذر تحديدها سيطلب البرومبت الاستيضاح بدل التخمين.</p>
           <details class="disclosure supplementary">
             <summary>تعليمات إضافية <span class="optional">اختياري</span></summary>
             <div class="form-field">
@@ -127,10 +142,30 @@
             <button id="advanced-mode-button" class="segment" type="button" aria-pressed="false" aria-controls="advanced-mode">متقدم: نوع × صعوبة</button>
           </div>
 
+          <fieldset class="bulk-types-fieldset">
+            <legend>الأنواع التي يُطبّق عليها العدد الموحّد</legend>
+            <div class="action-row">
+              <button id="bulk-types-all" class="button secondary compact" type="button">تحديد الكل</button>
+              <button id="bulk-types-none" class="button secondary compact" type="button">إلغاء التحديد</button>
+            </div>
+            <div class="bulk-types-grid">
+              <label><input type="checkbox" class="bulk-type-choice" value="MC" checked> اختيار من متعدد (MC)</label>
+              <label><input type="checkbox" class="bulk-type-choice" value="TF" checked> صح أو خطأ (TF)</label>
+              <label><input type="checkbox" class="bulk-type-choice" value="ESS" checked> مقالي (ESS)</label>
+              <label><input type="checkbox" class="bulk-type-choice" value="FIB" checked> ملء الفراغ (FIB)</label>
+              <label><input type="checkbox" class="bulk-type-choice" value="NUM" checked> إجابة رقمية (NUM)</label>
+              <label><input type="checkbox" class="bulk-type-choice" value="MAT" checked> مطابقة (MAT)</label>
+              <label><input type="checkbox" class="bulk-type-choice" value="MA" checked> اختيار متعدد الإجابات (MA)</label>
+              <label><input type="checkbox" class="bulk-type-choice" value="EO" checked> إما/أو (EO)</label>
+              <label><input type="checkbox" class="bulk-type-choice" value="JUM" checked> قوائم منسدلة (JUM)</label>
+              <label><input type="checkbox" class="bulk-type-choice" value="CALC" checked> معادلة محسوبة (CALC)</label>
+            </div>
+            <p class="field-help">الاختيار هنا يخص التعبئة الجماعية في الوضعين البسيط والمتقدم. الأنواع غير المحددة تحتفظ بأعدادها الحالية؛ العدد الموحّد هو لكل نوع، وليس مجموع الأسئلة.</p>
+          </fieldset>
           <div id="simple-mode">
-            <div class="count-fill-toolbar" aria-label="تعيين عدد موحد لجميع أنواع الأسئلة">
+            <div class="count-fill-toolbar" aria-label="تعيين عدد موحد للأنواع المحددة">
               <label for="simple-count-fill">عدد موحّد لكل نوع<input id="simple-count-fill" type="number" min="0" max="25" step="1" value="0" inputmode="numeric"></label>
-              <button id="apply-simple-count" class="button secondary compact" type="button">تطبيق على جميع الأنواع</button>
+              <button id="apply-simple-count" class="button secondary compact" type="button">تطبيق على الأنواع المحددة</button>
             </div>
             <div class="type-grid">
               <label class="count-card" for="count-MC"><span><b>MC</b> اختيار من متعدد</span><input id="count-MC" class="type-count" data-type="MC" type="number" min="0" max="50" step="1" value="0"></label>

@@ -49,6 +49,9 @@
     sourceContent: byId('source-content'),
     clearSource: byId('clear-source'),
     additionalInstructions: byId('additional-instructions'),
+    questionLanguage: byId('question-language'),
+    sourcePages: byId('source-pages'),
+    pageNumbering: byId('page-numbering'),
     simpleModeButton: byId('simple-mode-button'),
     advancedModeButton: byId('advanced-mode-button'),
     simpleMode: byId('simple-mode'),
@@ -359,23 +362,33 @@
   }
 
   function applySimpleCount() {
+    const selected = all('.bulk-type-choice:checked').map((input) => input.value);
+    if (!selected.length) {
+      setStatus(elements.promptStatus, 'حدد نوعًا واحدًا على الأقل لتطبيق العدد الموحّد.', 'warning');
+      return;
+    }
     const value = normalizedBulkCount(elements.simpleCountFill);
     elements.simpleCountFill.value = String(value);
-    all('.type-count').forEach((input) => { input.value = String(value); });
+    all('.type-count').filter((input) => selected.includes(input.dataset.type)).forEach((input) => { input.value = String(value); });
     updateTotals();
     invalidatePrompt();
-    setStatus(elements.promptStatus, `طُبق العدد ${value} على جميع أنواع الأسئلة في الوضع البسيط.`, 'success');
+    setStatus(elements.promptStatus, `طُبق العدد ${value} على ${selected.length} من الأنواع المحددة. أعد إنشاء البرومبت لتضمين التوزيع الجديد.`, 'success');
   }
 
   function applyMatrixColumn(level) {
+    const selected = all('.bulk-type-choice:checked').map((input) => input.value);
+    if (!selected.length) {
+      setStatus(elements.promptStatus, 'حدد نوعًا واحدًا على الأقل لتطبيق العدد الموحّد.', 'warning');
+      return;
+    }
     const fill = document.querySelector(`.matrix-column-fill[data-level="${level}"]`);
     if (!fill) return;
     const value = normalizedBulkCount(fill);
     fill.value = String(value);
-    all(`.matrix-cell[data-level="${level}"]`).forEach((input) => { input.value = String(value); });
+    all(`.matrix-cell[data-level="${level}"]`).filter((input) => selected.includes(input.dataset.type)).forEach((input) => { input.value = String(value); });
     updateTotals();
     invalidatePrompt();
-    setStatus(elements.promptStatus, `طُبق العدد ${value} على جميع الأنواع في عمود الصعوبة المحدد.`, 'success');
+    setStatus(elements.promptStatus, `طُبق العدد ${value} على ${selected.length} من الأنواع المحددة في عمود الصعوبة. أعد إنشاء البرومبت لتضمين التوزيع الجديد.`, 'success');
   }
 
   function updateDifficultyUi() {
@@ -532,6 +545,9 @@
       hasAttachment: elements.hasAttachment.checked,
       sourceContent: elements.sourceContent.value,
       additionalInstructions: elements.additionalInstructions.value,
+      questionLanguage: elements.questionLanguage.value,
+      sourcePages: elements.sourcePages.value,
+      pageNumbering: elements.pageNumbering.value,
       counts: collectCounts(),
       targetFormat: selectedFormat(),
       difficulty: collectDifficulty(),
@@ -562,6 +578,9 @@
 
   function focusPromptError(config, messages) {
     const joined = messages.join(' ');
+    if (joined.includes('الصفحات المطلوبة')) return markInvalid(elements.sourcePages);
+    if (joined.includes('ترقيم الصفحات')) return markInvalid(elements.pageNumbering);
+    if (joined.includes('لغة الأسئلة')) return markInvalid(elements.questionLanguage);
     if (!config.sourceContent.trim() && !config.hasAttachment) return markInvalid(elements.sourceContent);
     if (joined.includes('التعليمات الإضافية')) return markInvalid(elements.additionalInstructions);
     const activeInputs = advancedModeActive ? all('.matrix-cell') : all('.type-count');
@@ -1466,6 +1485,10 @@
   });
   all('.type-count, .mix-count, .matrix-cell').forEach((input) => input.addEventListener('input', () => { updateTotals(); invalidatePrompt(); }));
   elements.applySimpleCount.addEventListener('click', applySimpleCount);
+  byId('bulk-types-all').addEventListener('click', () => all('.bulk-type-choice').forEach((input) => { input.checked = true; }));
+  byId('bulk-types-none').addEventListener('click', () => all('.bulk-type-choice').forEach((input) => { input.checked = false; }));
+  elements.sourcePages.addEventListener('input', invalidatePrompt);
+  [elements.questionLanguage, elements.pageNumbering].forEach((input) => input.addEventListener('change', invalidatePrompt));
   all('.matrix-fill-button').forEach((button) => button.addEventListener('click', () => applyMatrixColumn(button.dataset.level)));
   all('.structure-setting:not([type="checkbox"])').forEach((input) => input.addEventListener('input', () => {
     if (input === elements.maChoiceCount) {
