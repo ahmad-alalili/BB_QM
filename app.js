@@ -362,7 +362,7 @@
   }
 
   function applySimpleCount() {
-    const selected = all('.bulk-type-choice:checked').map((input) => input.value);
+    const selected = [...new Set(all('.bulk-type-choice:checked').map((input) => input.value))];
     if (!selected.length) {
       setStatus(elements.promptStatus, 'حدد نوعًا واحدًا على الأقل لتطبيق العدد الموحّد.', 'warning');
       return;
@@ -376,7 +376,7 @@
   }
 
   function applyMatrixColumn(level) {
-    const selected = all('.bulk-type-choice:checked').map((input) => input.value);
+    const selected = [...new Set(all('.bulk-type-choice:checked').map((input) => input.value))];
     if (!selected.length) {
       setStatus(elements.promptStatus, 'حدد نوعًا واحدًا على الأقل لتطبيق العدد الموحّد.', 'warning');
       return;
@@ -1485,6 +1485,9 @@
   });
   all('.type-count, .mix-count, .matrix-cell').forEach((input) => input.addEventListener('input', () => { updateTotals(); invalidatePrompt(); }));
   elements.applySimpleCount.addEventListener('click', applySimpleCount);
+  all('.bulk-type-choice').forEach((input) => input.addEventListener('change', () => {
+    all('.bulk-type-choice').filter((peer) => peer.value === input.value).forEach((peer) => { peer.checked = input.checked; });
+  }));
   byId('bulk-types-all').addEventListener('click', () => all('.bulk-type-choice').forEach((input) => { input.checked = true; }));
   byId('bulk-types-none').addEventListener('click', () => all('.bulk-type-choice').forEach((input) => { input.checked = false; }));
   elements.sourcePages.addEventListener('input', invalidatePrompt);
