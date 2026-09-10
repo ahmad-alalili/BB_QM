@@ -361,6 +361,23 @@
     return Math.max(minimum, Math.min(maximum, value));
   }
 
+  function setQuestionTypeSelected(type, selected) {
+    all('.bulk-type-choice').filter((peer) => peer.value === type).forEach((peer) => { peer.checked = selected; });
+    all(`.type-count[data-type="${type}"], .matrix-cell[data-type="${type}"]`).forEach((input) => {
+      input.disabled = !selected;
+      if (!selected) {
+        input.value = '0';
+        input.removeAttribute('aria-invalid');
+      }
+    });
+  }
+
+  function refreshQuestionSelection() {
+    updateMatrixTotals();
+    updateTotals();
+    invalidatePrompt();
+  }
+
   function applySimpleCount() {
     const selected = [...new Set(all('.bulk-type-choice:checked').map((input) => input.value))];
     if (!selected.length) {
@@ -1486,10 +1503,17 @@
   all('.type-count, .mix-count, .matrix-cell').forEach((input) => input.addEventListener('input', () => { updateTotals(); invalidatePrompt(); }));
   elements.applySimpleCount.addEventListener('click', applySimpleCount);
   all('.bulk-type-choice').forEach((input) => input.addEventListener('change', () => {
-    all('.bulk-type-choice').filter((peer) => peer.value === input.value).forEach((peer) => { peer.checked = input.checked; });
+    setQuestionTypeSelected(input.value, input.checked);
+    refreshQuestionSelection();
   }));
-  byId('bulk-types-all').addEventListener('click', () => all('.bulk-type-choice').forEach((input) => { input.checked = true; }));
-  byId('bulk-types-none').addEventListener('click', () => all('.bulk-type-choice').forEach((input) => { input.checked = false; }));
+  byId('bulk-types-all').addEventListener('click', () => {
+    core.TYPE_ORDER.forEach((type) => setQuestionTypeSelected(type, true));
+    refreshQuestionSelection();
+  });
+  byId('bulk-types-none').addEventListener('click', () => {
+    core.TYPE_ORDER.forEach((type) => setQuestionTypeSelected(type, false));
+    refreshQuestionSelection();
+  });
   elements.sourcePages.addEventListener('input', invalidatePrompt);
   [elements.questionLanguage, elements.pageNumbering].forEach((input) => input.addEventListener('change', invalidatePrompt));
   all('.matrix-fill-button').forEach((button) => button.addEventListener('click', () => applyMatrixColumn(button.dataset.level)));
