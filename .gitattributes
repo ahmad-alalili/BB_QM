@@ -1,0 +1,3 @@
+# Preserve PDF offsets and font bytes across platforms.
+*.pdf binary
+*.ttf binary

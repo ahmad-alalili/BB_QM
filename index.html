@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="robots" content="noindex, nofollow, noarchive">
   <meta name="referrer" content="no-referrer">
-  <meta name="theme-color" content="#edf4f8">
+  <meta name="theme-color" content="#07543f">
   <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self'; style-src 'self'; img-src 'self' data:; font-src 'self'; connect-src https://bb-qm-analytics-api.ahmad20xx2020.workers.dev; object-src 'none'; base-uri 'none'; form-action 'none'">
   <meta name="description" content="أداة محلية لإنشاء أسئلة Blackboard وتصدير بنك أسئلة أو اختبار مقرر مستقل مع تعديل النقاط.">
   <title>منشئ أسئلة Blackboard</title>
@@ -13,9 +13,11 @@
   <link rel="stylesheet" href="styles.css">
   <link rel="stylesheet" href="responsive.css">
   <link rel="stylesheet" href="analytics.css">
+  <link rel="stylesheet" href="theme.css">
   <script defer src="vendor/jszip.min.js"></script>
   <script defer src="core.js"></script>
   <script defer src="analytics.js"></script>
+  <script defer src="appearance.js"></script>
   <script defer src="app.js"></script>
   <script defer src="layout.js"></script>
 </head>
@@ -43,14 +45,16 @@
   <header class="site-header">
     <div class="header-mark" aria-hidden="true">ب ب</div>
     <div class="header-title">
-      <p class="eyebrow">مساحة المدرّس</p>
+      <p class="eyebrow">مساحة المدرّب</p>
       <h1>منشئ أسئلة Blackboard</h1>
       <p class="subtitle">إعداد الأسئلة ومراجعتها، في مكان واحد.</p>
       <p class="contact-note">يمكنك مراسلتي عبر <a class="feedback-link" href="https://forms.cloud.microsoft/r/XcRLkytgSc" target="_blank" rel="noopener noreferrer" aria-label="مراسلة المهندس أحمد سعيد العليلي عبر نموذج الملاحظات" aria-describedby="feedback-hint">هذا الرابط</a></p>
     </div>
     <div class="header-tools">
       <label class="layout-picker" for="layout-mode"><span>طريقة العرض</span><select id="layout-mode" aria-describedby="layout-help"><option value="auto" selected>تلقائي حسب الشاشة</option><option value="mobile">نمط الهاتف</option><option value="desktop">نمط الكمبيوتر</option></select></label>
+      <label class="font-picker" for="interface-font"><span>خط الواجهة</span><select id="interface-font" aria-describedby="font-help"><option value="cairo" selected>القاهرة — عصري</option><option value="tajawal">تجوّل — انسيابي</option><option value="plex">IBM Plex — واضح</option><option value="naskh">النسخ — كلاسيكي</option><option value="ruqaa">الرقعة — أصيل</option><option value="system">خط الجهاز</option></select></label>
       <p id="layout-help" class="sr-only">تغيير العرض لا يمسح النصوص أو إعدادات الأسئلة. العرض التلقائي يتبع عرض النافذة.</p>
+      <p id="font-help" class="sr-only">يتغير خط الواجهة فور اختياره دون تحديث الصفحة أو تغيير محتوى الأسئلة والملفات المصدرة. يُحفظ اختيارك في هذا المتصفح.</p>
       <div class="privacy-badge" title="تعالج نصوص الأسئلة محليًا؛ عدّادات الاستخدام إجمالية ويمكن إيقافها">
       <span aria-hidden="true">●</span>
       معالجة محلية
@@ -59,11 +63,16 @@
   </header>
 
   <main id="main-content" class="page-shell" tabindex="-1">
-    <aside class="model-advice" aria-labelledby="model-advice-title">
+    <dialog id="model-advice-dialog" class="model-advice" aria-labelledby="model-advice-title" aria-describedby="model-advice-description">
+      <p class="model-advice-eyebrow">البرومبت جاهز</p>
       <h2 id="model-advice-title">ملاحظة لاختيار الذكاء الاصطناعي</h2>
-      <p>يفضّل صاحب الموقع استخدام <bdi>GPT‑5.6</bdi> أو أحدث، أو <bdi>Claude Opus 4.8</bdi> أو أحدث، أو أحدث إصدار متاح من <bdi>Gemini Flash</bdi> لإعداد الأسئلة.</p>
+      <p id="model-advice-description">يفضّل صاحب الموقع استخدام <bdi>GPT‑5.6</bdi> أو أحدث، أو <bdi>Claude Opus 4.8</bdi> أو أحدث، أو أحدث إصدار متاح من <bdi>Gemini Flash</bdi> لإعداد الأسئلة.</p>
       <p>يمكن أيضًا تجربة <bdi>Qwen3.8‑Max</bdi> و<bdi>DeepSeek</bdi> كبدائل، والاستفادة من الخيارات المجانية المتاحة بحسب الخدمة وحسابك. قد تختلف كفاءتها في إعداد الأسئلة وقراءة الملفات؛ راجع النتائج قبل اعتمادها.</p>
-    </aside>
+      <div class="model-advice-actions">
+        <label class="model-advice-preference"><input id="model-advice-remember" type="checkbox"><span>عدم تذكيري مرة أخرى</span></label>
+        <button id="model-advice-close" class="button primary" type="button" autofocus>متابعة إلى البرومبت</button>
+      </div>
+    </dialog>
     <section class="workflow-intro" aria-labelledby="workflow-title">
       <div>
         <p class="eyebrow">مسار العمل</p>
@@ -115,12 +124,12 @@
               <select id="question-language"><option value="ar">العربية</option><option value="en">الإنجليزية</option><option value="source">لغة المصدر</option></select>
             </div>
             <div class="form-field">
-              <label for="source-pages">الصفحات المطلوبة (اختياري)</label>
-              <input id="source-pages" type="text" maxlength="500" dir="ltr" placeholder="3, 7, 10-15" aria-describedby="source-pages-help">
-            </div>
-            <div class="form-field">
               <label for="page-numbering">طريقة ترقيم الصفحات</label>
               <select id="page-numbering" aria-describedby="source-pages-help"><option value="file">حسب ترتيب الصفحات في الملف</option><option value="book">حسب الأرقام المطبوعة داخل الكتاب</option></select>
+            </div>
+            <div class="form-field">
+              <label for="source-pages">الصفحات المطلوبة (اختياري)</label>
+              <input id="source-pages" type="text" maxlength="500" dir="ltr" placeholder="3, 7, 10-15" aria-describedby="source-pages-help">
             </div>
           </div>
           <p id="source-pages-help" class="field-help">اترك الصفحات فارغة لاستخدام المصدر كاملًا. ترتيب الملف يبدأ من 1 ويشمل الغلاف والفهرس؛ ترقيم الكتاب هو الرقم المطبوع على الصفحة. يُضاف اختيارك إلى البرومبت؛ أرفق الملف في محادثة الذكاء الاصطناعي، أو ألصق نصًا يوضح حدود الصفحات وأرقامها. إذا تعذر تحديدها سيطلب البرومبت الاستيضاح بدل التخمين.</p>
@@ -153,7 +162,7 @@
               <button id="bulk-types-all" class="button secondary compact" type="button">تحديد الكل</button>
               <button id="bulk-types-none" class="button secondary compact" type="button">إلغاء التحديد</button>
             </div>
-            <p class="field-help">إلغاء تحديد النوع يصفّر أعداده في الوضعين ويستبعده من الطلب. أعد تحديده لإدخال أعداد جديدة. العدد الموحّد يُطبّق على الأنواع المحددة فقط.</p>
+          <p class="field-help">النوع المحدد بالأخضر وغير المحدد بالأحمر. إلغاء تحديده يفرغ أعداده في الوضعين ويستبعده من الطلب؛ وعند إعادة تحديده تبدأ الخانات من 0. العدد الموحّد يُطبّق على الأنواع المحددة فقط.</p>
           </fieldset>
           <div id="simple-mode">
             <div class="count-fill-toolbar" aria-label="تعيين عدد موحد للأنواع المحددة">
@@ -325,7 +334,7 @@
               <strong>Gemini</strong><span>نسخ وفتح في تبويب جديد</span>
             </a>
           </div>
-          <p class="privacy-note">لا يُلصق النص ولا يُرسل تلقائيًا؛ الصقه أنت داخل المحادثة ثم راجعه قبل الإرسال. قد يبقى النص في حافظة الجهاز بعد إغلاق الصفحة.</p>
+          <p class="privacy-note">لا يُلصق النص ولا يُرسل تلقائيًا؛ ألصقه أنت داخل المحادثة ثم راجعه قبل الإرسال. قد يبقى النص في حافظة الجهاز بعد إغلاق الصفحة.</p>
         </section>
         <div class="mobile-step-action"><button id="go-to-export" class="button secondary" type="button">لديّ رد الذكاء الاصطناعي — متابعة للتصدير</button></div>
       </section>
@@ -442,7 +451,7 @@
       <div>
         <p class="eyebrow">قبل الرفع</p>
         <h2 id="guide-title">قائمة تحقق قصيرة</h2>
-        <p><a class="guide-download" href="docs/دليل-استخدام-منشئ-أسئلة-بلاكبورد-2.1.pdf" download="دليل-استخدام-منشئ-أسئلة-بلاكبورد-2.1.pdf">تنزيل دليل المستخدم 2.1 (PDF)</a></p>
+        <p><a class="guide-download" href="docs/دليل-استخدام-منشئ-أسئلة-بلاكبورد-2.5.pdf" download="دليل-استخدام-منشئ-أسئلة-بلاكبورد-2.5.pdf">تنزيل دليل المستخدم 2.5 (PDF)</a></p>
       </div>
       <div class="guide-grid">
         <article><span aria-hidden="true">1</span><h3>راجع المحتوى</h3><p>راجع صحة الأسئلة وإجاباتها علميًا وتربويًا وارتباطها بمخرجات التعلم. نجاح التدقيق التنسيقي لا يثبت صحة المحتوى أو مستوى الصعوبة.</p></article>
@@ -468,7 +477,7 @@
   </main>
 
   <footer class="site-footer">
-    <div><strong>منشئ أسئلة Blackboard</strong><span>الإصدار <span id="app-version">2.1</span></span></div>
+    <div><strong>منشئ أسئلة Blackboard</strong><span>الإصدار <span id="app-version">2.5</span></span></div>
     <p>تُعالج نصوص الأسئلة محليًا. أزرار الخدمات تنسخ البرومبت وتفتح الموقع فقط؛ لا يُلصق النص ولا يُرسل إلا باختيارك. عدّادات الاستخدام إجمالية ولا تتضمن محتوى الأسئلة، ويمكن إيقافها.</p>
     <div class="footer-credit">
       <p>© 2026 المهندس <strong>أحمد سعيد العليلي</strong><br>جميع الحقوق محفوظة.</p>

@@ -635,10 +635,6 @@ fieldset > legend {
   border-color: rgb(15 139 131 / 34%);
 }
 
-.count-card:has(input:not([value="0"])) {
-  border-color: #a8c9bd;
-}
-
 .count-card span {
   min-width: 0;
   font-size: 0.88rem;
@@ -1068,9 +1064,28 @@ th {
 .inline-type-label { display: flex; align-items: center; gap: 0.55rem; min-width: 0; min-height: 44px; cursor: pointer; }
 .count-card .inline-type-label { flex: 1; }
 .inline-type-label input.bulk-type-choice { width: 20px; height: 20px; min-width: 20px; flex: 0 0 20px; padding: 0; }
-.model-advice { margin-block-end: 1.25rem; padding: 1rem 1.2rem; border: 1px solid #91cec8; border-radius: 16px; background: #effbf9; color: #173f48; }
-.model-advice h2 { font-size: 1.1rem; margin: 0 0 0.5rem; }
-.model-advice p { margin: 0.5rem 0; line-height: 1.8; }
+dialog.model-advice {
+  width: min(35rem, calc(100% - 2rem));
+  max-height: calc(100dvh - 2rem);
+  margin: auto;
+  padding: clamp(1.1rem, 4vw, 2rem);
+  overflow: auto;
+  overscroll-behavior: contain;
+  border: 1px solid #9bdaca;
+  border-radius: 24px;
+  background: linear-gradient(145deg, #ffffff, #edf9f5);
+  color: #173f48;
+  box-shadow: 0 24px 80px rgb(10 46 42 / 28%), inset 0 1px 0 #fff;
+}
+dialog.model-advice::backdrop { background: rgb(15 32 46 / 45%); backdrop-filter: blur(6px); }
+body:has(#model-advice-dialog[open]) { overflow-y: hidden; }
+.model-advice h2 { font-size: 1.2rem; margin: 0 0 0.8rem; }
+.model-advice p { margin: 0.6rem 0; line-height: 1.85; }
+.model-advice .model-advice-eyebrow { color: #087457; font-size: 0.85rem; font-weight: 800; }
+.model-advice-actions { display: grid; gap: 0.85rem; margin-block-start: 1.25rem; padding-block-start: 0.8rem; border-top: 1px solid #c4ded6; }
+.model-advice-preference { display: flex; align-items: center; gap: 0.65rem; min-height: 44px; cursor: pointer; font-size: 0.95rem; }
+.model-advice-preference input { flex: 0 0 20px; width: 20px; height: 20px; }
+.model-advice-actions .button { width: 100%; min-height: 48px; }
 .field-clear-toolbar { display: flex; margin-block: 0.65rem; }
 .button.clear-field-button {
   min-height: 44px;

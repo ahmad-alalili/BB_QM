@@ -81,6 +81,9 @@
     shuffleAnswers: byId('shuffle-answers'),
     includeReviewNotes: byId('include-review-notes'),
     generatePrompt: byId('generate-prompt'),
+    modelAdvice: byId('model-advice-dialog'),
+    modelAdviceRemember: byId('model-advice-remember'),
+    modelAdviceClose: byId('model-advice-close'),
     copyPrompt: byId('copy-prompt'),
     clearPrompt: byId('clear-prompt'),
     restorePrompt: byId('restore-prompt'),
@@ -134,6 +137,8 @@
   let generatedQuestionSettings = null;
   let requestedQuestionSettings = null;
   let pointsDraft = null;
+  const MODEL_ADVICE_PREFERENCE = 'bb-qm:model-advice-dismissed:v1';
+  let modelAdviceDismissed = false;
 
   function numericValue(input) {
     const value = Number(input.value);
@@ -364,10 +369,13 @@
   function setQuestionTypeSelected(type, selected) {
     all('.bulk-type-choice').filter((peer) => peer.value === type).forEach((peer) => { peer.checked = selected; });
     all(`.type-count[data-type="${type}"], .matrix-cell[data-type="${type}"]`).forEach((input) => {
+      const wasDisabled = input.disabled;
       input.disabled = !selected;
       if (!selected) {
-        input.value = '0';
+        input.value = '';
         input.removeAttribute('aria-invalid');
+      } else if (wasDisabled || input.value === '') {
+        input.value = '0';
       }
     });
   }
@@ -433,7 +441,7 @@
     core.TYPE_ORDER.forEach((type) => {
       const source = byId(`count-${type}`);
       const target = document.querySelector(`.matrix-cell[data-type="${type}"][data-level="medium"]`);
-      target.value = source.value || '0';
+      target.value = target.disabled ? '' : (source.value || '0');
     });
   }
 
@@ -443,7 +451,8 @@
         (sum, input) => sum + Math.max(0, numericValue(input)),
         0,
       );
-      byId(`count-${type}`).value = String(total);
+      const target = byId(`count-${type}`);
+      target.value = target.disabled ? '' : String(total);
     });
   }
 
@@ -620,6 +629,25 @@
     return markInvalid(elements.questionTotal);
   }
 
+  function showModelAdvice() {
+    if (modelAdviceDismissed) return;
+    try {
+      if (window.localStorage.getItem(MODEL_ADVICE_PREFERENCE) === 'yes') return;
+    } catch (_) { /* The reminder also works when browser storage is unavailable. */ }
+    if (!elements.modelAdvice.open && typeof elements.modelAdvice.showModal === 'function') {
+      elements.modelAdviceRemember.checked = false;
+      elements.modelAdvice.showModal();
+    }
+  }
+
+  function rememberModelAdviceChoice() {
+    if (!elements.modelAdviceRemember.checked) return;
+    modelAdviceDismissed = true;
+    try {
+      window.localStorage.setItem(MODEL_ADVICE_PREFERENCE, 'yes');
+    } catch (_) { /* Keep the choice for this page even if it cannot be saved. */ }
+  }
+
   function generatePrompt() {
     clearInvalid();
     const config = collectPromptConfig();
@@ -643,6 +671,7 @@
         `تم إنشاء البرومبت. عدد الأسئلة المطلوبة: ${currentTotal()}. يمكنك تعديله، ثم نسخه أو فتح الخدمة المطلوبة.`,
         'success',
       );
+      showModelAdvice();
     } catch (error) {
       requestedCounts = currentPrompt === generatedBasePrompt && generatedRequestedCounts
         ? { ...generatedRequestedCounts }
@@ -887,7 +916,7 @@
       .then(() => {
         measure('prompt_copied');
         if (copyRevision === promptRevision && !promptIsStale) {
-          setStatus(elements.promptStatus, `تم نسخ البرومبت. الصقه داخل ${provider.name} وراجعه قبل الإرسال.`, 'success');
+          setStatus(elements.promptStatus, `تم نسخ البرومبت. ألصقه داخل ${provider.name} وراجعه قبل الإرسال.`, 'success');
         } else {
           setStatus(
             elements.promptStatus,
@@ -908,7 +937,7 @@
         } else {
           setStatus(
             elements.promptStatus,
-            `طُلب فتح ${provider.name}، لكن تعذر نسخ البرومبت. حُدد النص؛ استخدم Ctrl+C ثم الصقه يدويًا.`,
+            `طُلب فتح ${provider.name}، لكن تعذر نسخ البرومبت. حُدد النص؛ استخدم Ctrl+C ثم ألصقه يدويًا.`,
             'error',
           );
           selectPromptForManualCopy();
@@ -1577,6 +1606,8 @@
   elements.resetPoints.addEventListener('click', resetQuestionPoints);
   elements.downloadReviewed.addEventListener('click', exportResponse);
   elements.generatePrompt.addEventListener('click', generatePrompt);
+  elements.modelAdviceClose.addEventListener('click', () => elements.modelAdvice.close());
+  elements.modelAdvice.addEventListener('close', rememberModelAdviceChoice);
   elements.copyPrompt.addEventListener('click', copyPrompt);
   elements.clearPrompt.addEventListener('click', clearPrompt);
   elements.restorePrompt.addEventListener('click', restorePrompt);
