@@ -61,9 +61,9 @@ test('new edit/paste metrics do not include edited or pasted contents', async ()
   for (const event of ['prompt_edited','prompt_pasted','response_pasted']) await client.track(event,{ text:'PRIVATE' });
   assert.equal(calls.length,3); assert.ok(calls.every(call => !call.body.includes('PRIVATE')));
   const app=readFileSync(require.resolve('../app.js'),'utf8');
-  assert.match(app,/promptOutput\.addEventListener\('change', \(\) => measure\('prompt_edited'\)\)/);
-  assert.match(app,/inputType === 'insertFromPaste'\) measure\('prompt_pasted'\)/);
-  assert.match(app,/inputType === 'insertFromPaste'\) measure\('response_pasted'\)/);
+  assert.match(app,/promptOutput\.addEventListener\('change', \(\) => actions\.measure\('prompt_edited'\)\)/);
+  assert.match(app,/inputType === 'insertFromPaste'\) actions\.measure\('prompt_pasted'\)/);
+  assert.match(app,/inputType === 'insertFromPaste'\) actions\.measure\('response_pasted'\)/);
 });
 test('failed requests never retry or interrupt the tools', async () => {
   let n=0; const { client }=setup({ fetch:async () => { n++; throw Error('offline'); } });

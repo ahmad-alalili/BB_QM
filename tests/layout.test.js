@@ -5,7 +5,7 @@ const assert = require('node:assert/strict');
 const fs = require('node:fs');
 const path = require('node:path');
 const layout = require('../layout.js');
-const read = name => fs.readFileSync(path.join(__dirname, '..', name), 'utf8');
+const {read} = require('./helpers/sources.js');
 
 // Unit-test doubles: these check state, focus and semantics, not browser pixels.
 function fixture(width = 390, mediaApi = 'modern') {

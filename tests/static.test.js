@@ -8,7 +8,7 @@ const crypto = require('node:crypto');
 const core = require('../core.js');
 
 const root = path.resolve(__dirname, '..');
-const read = (name) => fs.readFileSync(path.join(root, name), 'utf8');
+const {read} = require('./helpers/sources.js');
 
 const PROVIDER_URLS = Object.freeze([
   'https://chatgpt.com/',
@@ -126,10 +126,10 @@ test('the generated prompt becomes editable and its restore control starts disab
   assert.match(app, /promptOutput\.addEventListener\(["']input["']/);
   assert.match(app, /restorePrompt\.addEventListener\(["']click["']/);
   assert.match(app, /distribution_check_skipped/);
-  assert.match(app, /currentPrompt !== generatedBasePrompt/);
-  assert.match(app, /let generatedRequestedCounts = null/);
-  assert.match(app, /requestedCounts = currentPrompt === generatedBasePrompt && generatedRequestedCounts/);
-  assert.doesNotMatch(app, /generatedBasePrompt && !promptIsStale && currentPrompt !== generatedBasePrompt/);
+  assert.match(app, /state\.currentPrompt !== state\.generatedBasePrompt/);
+  assert.match(app, /generatedRequestedCounts: null/);
+  assert.match(app, /state\.requestedCounts = state\.currentPrompt === state\.generatedBasePrompt && state\.generatedRequestedCounts/);
+  assert.doesNotMatch(app, /state\.generatedBasePrompt && !state\.promptIsStale && state\.currentPrompt !== state\.generatedBasePrompt/);
 });
 
 test('distribution-only failures explain that syntax passed and the AI quota did not', () => {
@@ -153,8 +153,8 @@ test('provider links are fixed, complete, and safe to open in a new tab', () => 
   });
   const app = read('app.js');
   assert.match(app, /removeAttribute\(['"]href['"]\)/);
-  assert.match(app, /const copyRevision = promptRevision/);
-  assert.match(app, /copyRevision === promptRevision && !promptIsStale/);
+  assert.match(app, /const copyRevision = state\.promptRevision/);
+  assert.match(app, /copyRevision === state\.promptRevision && !state\.promptIsStale/);
 });
 
 test('application code avoids dangerous DOM insertion and anti-devtools behavior', () => {
@@ -276,7 +276,7 @@ test('Native bank and course test share the accessible points review step', () =
   assert.match(html, /id="download-reviewed"/);
   assert.match(html, /<caption class="sr-only">تعديل نقاط كل سؤال<\/caption>/);
   assert.match(app, /aiResponse\.addEventListener\('input',[\s\S]*clearPointsDraft\(\)/);
-  assert.match(app, /core\.applyQuestionPoints\(questions, pointsDraft\.values\)/);
+  assert.match(app, /core\.applyQuestionPoints\(questions, state\.pointsDraft\.values\)/);
   assert.match(app, /result\.pointsInitialized[\s\S]*ظهرت نقاط الأسئلة للمراجعة/);
   assert.match(app, /core\.buildNativeFiles\(result\.questions/);
   assert.match(app, /return format === 'native-bank' \|\| format === 'native-test'/);

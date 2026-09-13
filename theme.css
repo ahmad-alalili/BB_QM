@@ -294,6 +294,12 @@ html[data-layout="mobile"] .disclosure { padding-inline: .8rem; }
   html { scroll-behavior: auto; }
   *, *::before, *::after { transition: none !important; animation: none !important; }
 }
+/* The full Arabic font name needs its own row, including on narrow screens. */
+.header-tools > .font-picker,
+html[data-layout="mobile"] .header-tools > .font-picker {
+  grid-column: 1 / -1;
+  grid-template-columns: minmax(0, 1fr);
+}
 @supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
   .panel, .analytics-notice, dialog.model-advice { background: #f6fcf8; }
 }

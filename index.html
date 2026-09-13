@@ -14,10 +14,33 @@
   <link rel="stylesheet" href="responsive.css">
   <link rel="stylesheet" href="analytics.css">
   <link rel="stylesheet" href="theme.css">
+  <link rel="stylesheet" href="cursor.css">
   <script defer src="vendor/jszip.min.js"></script>
+  <script defer src="src/core/shared.js"></script>
+  <script defer src="src/core/arithmetic.js"></script>
+  <script defer src="src/core/prompt-settings.js"></script>
+  <script defer src="src/core/prompt-build.js"></script>
+  <script defer src="src/core/question-text.js"></script>
+  <script defer src="src/core/question-json.js"></script>
+  <script defer src="src/core/question-parser.js"></script>
+  <script defer src="src/core/question-validation.js"></script>
+  <script defer src="src/core/txt-qti.js"></script>
+  <script defer src="src/core/native-serialization.js"></script>
+  <script defer src="src/core/native-validation.js"></script>
+  <script defer src="src/core/native-package.js"></script>
   <script defer src="core.js"></script>
   <script defer src="analytics.js"></script>
   <script defer src="appearance.js"></script>
+  <script defer src="src/ui/context.js"></script>
+  <script defer src="src/ui/metrics.js"></script>
+  <script defer src="src/ui/helpers.js"></script>
+  <script defer src="src/ui/partial-credit.js"></script>
+  <script defer src="src/ui/question-counts.js"></script>
+  <script defer src="src/ui/prompt-editor.js"></script>
+  <script defer src="src/ui/clipboard.js"></script>
+  <script defer src="src/ui/response-review.js"></script>
+  <script defer src="src/ui/points-editor.js"></script>
+  <script defer src="src/ui/export-download.js"></script>
   <script defer src="app.js"></script>
   <script defer src="layout.js"></script>
 </head>
@@ -52,7 +75,7 @@
     </div>
     <div class="header-tools">
       <label class="layout-picker" for="layout-mode"><span>طريقة العرض</span><select id="layout-mode" aria-describedby="layout-help"><option value="auto" selected>تلقائي حسب الشاشة</option><option value="mobile">نمط الهاتف</option><option value="desktop">نمط الكمبيوتر</option></select></label>
-      <label class="font-picker" for="interface-font"><span>خط الواجهة</span><select id="interface-font" aria-describedby="font-help"><option value="cairo" selected>القاهرة — عصري</option><option value="tajawal">تجوّل — انسيابي</option><option value="plex">IBM Plex — واضح</option><option value="naskh">النسخ — كلاسيكي</option><option value="ruqaa">الرقعة — أصيل</option><option value="system">خط الجهاز</option></select></label>
+      <label class="font-picker" for="interface-font"><span>خط الواجهة</span><select id="interface-font" aria-describedby="font-help"><option value="cairo" selected>خط المؤسسة للتدريب التقني والمهني</option><option value="tajawal">تجوّل — انسيابي</option><option value="plex">IBM Plex — واضح</option><option value="naskh">النسخ — كلاسيكي</option><option value="ruqaa">الرقعة — أصيل</option><option value="system">خط الجهاز</option></select></label>
       <p id="layout-help" class="sr-only">تغيير العرض لا يمسح النصوص أو إعدادات الأسئلة. العرض التلقائي يتبع عرض النافذة.</p>
       <p id="font-help" class="sr-only">يتغير خط الواجهة فور اختياره دون تحديث الصفحة أو تغيير محتوى الأسئلة والملفات المصدرة. يُحفظ اختيارك في هذا المتصفح.</p>
       <div class="privacy-badge" title="تعالج نصوص الأسئلة محليًا؛ عدّادات الاستخدام إجمالية ويمكن إيقافها">

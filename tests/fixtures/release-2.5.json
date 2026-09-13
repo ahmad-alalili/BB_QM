@@ -1,0 +1,425 @@
+{
+  "release": "f89c069c72d147366e8376305085c6bfa0b7cd17",
+  "options": {
+    "title": "اختبار مرجعي للصيانة",
+    "idSeed": 918273,
+    "generatedAt": "2026-09-11T00:00:00Z",
+    "shuffleAnswers": true
+  },
+  "scenarios": [
+    {
+      "name": "all-ten-types",
+      "records": [
+        {
+          "type": "MC",
+          "question": "اختر الإجابة الصحيحة.",
+          "points": 1,
+          "choices": [
+            {
+              "text": "صحيح",
+              "correct": true
+            },
+            {
+              "text": "خاطئ",
+              "correct": false
+            }
+          ]
+        },
+        {
+          "type": "TF",
+          "question": "هذه عبارة صحيحة.",
+          "points": 1,
+          "answer": true
+        },
+        {
+          "type": "CALC",
+          "question": "احسب ناتج الكسر 10÷5.",
+          "points": 1,
+          "formula": "10/5",
+          "answer": 2,
+          "tolerance": 0,
+          "decimals": 2
+        },
+        {
+          "type": "NUM",
+          "question": "كم يساوي 10÷4؟",
+          "points": 2,
+          "answer": 2.5,
+          "tolerance": 0.01
+        },
+        {
+          "type": "ESS",
+          "question": "عرّف نموذج العمل باختصار.",
+          "points": 0.5,
+          "exampleAnswer": "وصف كيفية خلق القيمة.",
+          "rows": 3
+        },
+        {
+          "type": "FIB",
+          "question": "عاصمة المملكة هي ____.",
+          "points": 1,
+          "answers": [
+            "الرياض"
+          ]
+        },
+        {
+          "type": "MAT",
+          "question": "طابق المصطلح.",
+          "points": 2.5,
+          "pairs": [
+            {
+              "prompt": "الإيراد",
+              "match": "الدخل"
+            },
+            {
+              "prompt": "التكلفة",
+              "match": "الموارد"
+            }
+          ]
+        },
+        {
+          "type": "MA",
+          "question": "اختر القنوات الرقمية.",
+          "points": 1,
+          "choices": [
+            {
+              "text": "الموقع",
+              "correct": true
+            },
+            {
+              "text": "البريد",
+              "correct": true
+            },
+            {
+              "text": "المتجر التقليدي",
+              "correct": false
+            }
+          ],
+          "selectionLimit": 2
+        },
+        {
+          "type": "EO",
+          "question": "المصروف أصل.",
+          "points": 1,
+          "pair": "true_false",
+          "answer": "second"
+        },
+        {
+          "type": "JUM",
+          "question": "تبدأ الخطة بـ [[step]].",
+          "points": 1,
+          "slots": [
+            {
+              "id": "step",
+              "answer": "تحليل السوق",
+              "distractors": [
+                "الإغلاق",
+                "التصفية"
+              ]
+            }
+          ]
+        }
+      ],
+      "parsed": "006514c8c9b79109720de118a6fbf01bd90c93f8e46cf1e2fb49779084c8df51",
+      "pool": {
+        ".bb-package-info": "5a6399204dc6cbc1e3bc2a6b657358033279611731b4a1fb6037dc95f6dd268e",
+        "imsmanifest.xml": "413f4af596e16ae1ff823d1ae5f7c7954d6c5dee52e37889e28c10b2dfcbf607",
+        "res00001.dat": "6617a989e2821636e51571ad673717f41e86a1c867951240e7fcaed675ffd87c",
+        "res00002.dat": "83f77c2397f628533501386fbc1b6b1ac4ca63a07e06474bd7e61e63ebbebff2",
+        "res00003.dat": "677c6f952332030a4a76548bf1eca52fbad6a99b0bc331b442751b728f7001c2"
+      },
+      "test": {
+        ".bb-package-info": "5a6399204dc6cbc1e3bc2a6b657358033279611731b4a1fb6037dc95f6dd268e",
+        "imsmanifest.xml": "943662710fc2c6aeb8eec53aa3ee5bd844e910b2e5e3e5d7004be8b5d6658cd0",
+        "res00006.dat": "e43c5a936b0648e49beae2ba00759bc0adb4516f8d1aba0a18f6fcf50adf3d8c",
+        "res00007.dat": "e1e3daef4936335004937fb6a4d428e08128bf11205dfa679e65581ae71cbd8c",
+        "res00008.dat": "e606a9657b7c14acda89f7dd8a59e839773a470858e591268bd07cb1785b1720",
+        "res00015.dat": "45088a4dae91cd1b02e3a8a2589eeabcc361ca20c6f7a1d40a4309d1d4cf84c7",
+        "res00016.dat": "13e678fe1aad95bb05f353b66818e05f80839092498f3a0e27e5f1c781682884",
+        "res00018.dat": "c5660fe205e40351b106cebff6c0165ebffc125185525934d53c6dfb0b7f2a8d",
+        "res00019.dat": "467ce6877276b15fa0b2d50a3dc750e87c9a53a648a905ce425578146fce119a",
+        "res00020.dat": "cf942c1e2e70b240b3e4dd76063ec328b376262ff2373d800a3f1aaa0b8a09bc",
+        "res00021.dat": "22d95fcc2e3befcaacb63846f270fa20663b5cb62a8b9be1fab0331a303f4f81",
+        "res00023.dat": "717aaa62c654607bf2d9a0405f315fc99cd49a4098b8566a488df857c472971e",
+        "res00025.dat": "4a1adaf4f807d514ba93c5357dfd999523f9d991458104cdfa7762724b12a457",
+        "res00026.dat": "a4ae04ed9c3e8a62e7f383b247a245008bfe0e6290e8c9414e570ad30c571740"
+      }
+    },
+    {
+      "name": "weighted-and-distractors",
+      "records": [
+        {
+          "type": "MC",
+          "question": "اختر الإجابة الصحيحة.",
+          "points": 1,
+          "choices": [
+            {
+              "text": "صحيح",
+              "correct": true
+            },
+            {
+              "text": "خاطئ",
+              "correct": false
+            }
+          ]
+        },
+        {
+          "type": "TF",
+          "question": "هذه عبارة صحيحة.",
+          "points": 1,
+          "answer": true
+        },
+        {
+          "type": "CALC",
+          "question": "احسب ناتج الكسر 10÷5.",
+          "points": 1,
+          "formula": "10/5",
+          "answer": 2,
+          "tolerance": 0,
+          "decimals": 2
+        },
+        {
+          "type": "NUM",
+          "question": "كم يساوي 10÷4؟",
+          "points": 2,
+          "answer": 2.5,
+          "tolerance": 0.01
+        },
+        {
+          "type": "ESS",
+          "question": "عرّف نموذج العمل باختصار.",
+          "points": 0.5,
+          "exampleAnswer": "وصف كيفية خلق القيمة.",
+          "rows": 3
+        },
+        {
+          "type": "FIB",
+          "question": "عاصمة المملكة هي ____.",
+          "points": 1,
+          "answers": [
+            "الرياض"
+          ]
+        },
+        {
+          "type": "MAT",
+          "question": "طابق المصطلح.",
+          "points": 2.5,
+          "pairs": [
+            {
+              "prompt": "الإيراد",
+              "match": "الدخل"
+            },
+            {
+              "prompt": "التكلفة",
+              "match": "الموارد"
+            }
+          ],
+          "distractors": [
+            "مشتت أول",
+            "مشتت ثان"
+          ]
+        },
+        {
+          "type": "MA",
+          "question": "اختر القنوات الرقمية.",
+          "points": 1,
+          "choices": [
+            {
+              "text": "الموقع",
+              "correct": true,
+              "percent": 75
+            },
+            {
+              "text": "البريد",
+              "correct": true,
+              "percent": 25
+            },
+            {
+              "text": "المتجر التقليدي",
+              "correct": false,
+              "percent": 0
+            }
+          ],
+          "selectionLimit": 2,
+          "partialCredit": true
+        },
+        {
+          "type": "EO",
+          "question": "المصروف أصل.",
+          "points": 1,
+          "pair": "true_false",
+          "answer": "second"
+        },
+        {
+          "type": "JUM",
+          "question": "تبدأ الخطة بـ [[step]].",
+          "points": 1,
+          "slots": [
+            {
+              "id": "step",
+              "answer": "تحليل السوق",
+              "distractors": [
+                "الإغلاق",
+                "التصفية"
+              ]
+            }
+          ]
+        }
+      ],
+      "parsed": "7ed61cbbe9ea1127ad845e63e48955246758b55b823a649f21f28b7c0e4da333",
+      "pool": {
+        ".bb-package-info": "5a6399204dc6cbc1e3bc2a6b657358033279611731b4a1fb6037dc95f6dd268e",
+        "imsmanifest.xml": "413f4af596e16ae1ff823d1ae5f7c7954d6c5dee52e37889e28c10b2dfcbf607",
+        "res00001.dat": "6617a989e2821636e51571ad673717f41e86a1c867951240e7fcaed675ffd87c",
+        "res00002.dat": "885d72e4f807a01663e28898821622f8700be8b472249336a72009696874db12",
+        "res00003.dat": "677c6f952332030a4a76548bf1eca52fbad6a99b0bc331b442751b728f7001c2"
+      },
+      "test": {
+        ".bb-package-info": "5a6399204dc6cbc1e3bc2a6b657358033279611731b4a1fb6037dc95f6dd268e",
+        "imsmanifest.xml": "943662710fc2c6aeb8eec53aa3ee5bd844e910b2e5e3e5d7004be8b5d6658cd0",
+        "res00006.dat": "e43c5a936b0648e49beae2ba00759bc0adb4516f8d1aba0a18f6fcf50adf3d8c",
+        "res00007.dat": "e1e3daef4936335004937fb6a4d428e08128bf11205dfa679e65581ae71cbd8c",
+        "res00008.dat": "e606a9657b7c14acda89f7dd8a59e839773a470858e591268bd07cb1785b1720",
+        "res00015.dat": "14d1fede4f12de6cad77761b61a6190e3e42dab2fc2612da78a6cd6dd60161db",
+        "res00016.dat": "13e678fe1aad95bb05f353b66818e05f80839092498f3a0e27e5f1c781682884",
+        "res00018.dat": "c5660fe205e40351b106cebff6c0165ebffc125185525934d53c6dfb0b7f2a8d",
+        "res00019.dat": "467ce6877276b15fa0b2d50a3dc750e87c9a53a648a905ce425578146fce119a",
+        "res00020.dat": "cf942c1e2e70b240b3e4dd76063ec328b376262ff2373d800a3f1aaa0b8a09bc",
+        "res00021.dat": "22d95fcc2e3befcaacb63846f270fa20663b5cb62a8b9be1fab0331a303f4f81",
+        "res00023.dat": "717aaa62c654607bf2d9a0405f315fc99cd49a4098b8566a488df857c472971e",
+        "res00025.dat": "4a1adaf4f807d514ba93c5357dfd999523f9d991458104cdfa7762724b12a457",
+        "res00026.dat": "a4ae04ed9c3e8a62e7f383b247a245008bfe0e6290e8c9414e570ad30c571740"
+      }
+    }
+  ],
+  "config": {
+    "sourceContent": "مرجع تدريبي للتجربة",
+    "counts": {
+      "MC": 1,
+      "TF": 1,
+      "ESS": 1,
+      "FIB": 1,
+      "NUM": 1,
+      "MAT": 1,
+      "MA": 1,
+      "EO": 1,
+      "JUM": 1,
+      "CALC": 1
+    },
+    "difficulty": {
+      "mode": "single",
+      "level": 3
+    },
+    "questionLanguage": "en",
+    "sourcePages": "3,7,10-15",
+    "pageNumbering": "book"
+  },
+  "prompt": "5d6d32944e5579caf7211f6e35da6b5b8cab28c548f697504b3ab310d0bdfe1e",
+  "txtRecords": [
+    {
+      "type": "MC",
+      "question": "اختر الإجابة الصحيحة.",
+      "points": 1,
+      "choices": [
+        {
+          "text": "صحيح",
+          "correct": true
+        },
+        {
+          "text": "خاطئ",
+          "correct": false
+        }
+      ]
+    },
+    {
+      "type": "TF",
+      "question": "هذه عبارة صحيحة.",
+      "points": 1,
+      "answer": true
+    },
+    {
+      "type": "NUM",
+      "question": "كم يساوي 10÷4؟",
+      "points": 2,
+      "answer": 2.5,
+      "tolerance": 0.01
+    },
+    {
+      "type": "ESS",
+      "question": "عرّف نموذج العمل باختصار.",
+      "points": 0.5,
+      "exampleAnswer": "وصف كيفية خلق القيمة.",
+      "rows": 3
+    },
+    {
+      "type": "FIB",
+      "question": "عاصمة المملكة هي ____.",
+      "points": 1,
+      "answers": [
+        "الرياض"
+      ]
+    },
+    {
+      "type": "MAT",
+      "question": "طابق المصطلح.",
+      "points": 2.5,
+      "pairs": [
+        {
+          "prompt": "الإيراد",
+          "match": "الدخل"
+        },
+        {
+          "prompt": "التكلفة",
+          "match": "الموارد"
+        }
+      ]
+    }
+  ],
+  "txt": "3084b4ef5d6651b62eecd6074253816db11691b6cd5759d614f72bc2ce70de02",
+  "qtiRecords": [
+    {
+      "type": "MC",
+      "question": "اختر الإجابة الصحيحة.",
+      "points": 1,
+      "choices": [
+        {
+          "text": "صحيح",
+          "correct": true
+        },
+        {
+          "text": "خاطئ",
+          "correct": false
+        }
+      ]
+    },
+    {
+      "type": "TF",
+      "question": "هذه عبارة صحيحة.",
+      "points": 1,
+      "answer": true
+    },
+    {
+      "type": "ESS",
+      "question": "عرّف نموذج العمل باختصار.",
+      "points": 0.5,
+      "exampleAnswer": "وصف كيفية خلق القيمة.",
+      "rows": 3
+    },
+    {
+      "type": "FIB",
+      "question": "عاصمة المملكة هي ____.",
+      "points": 1,
+      "answers": [
+        "الرياض"
+      ]
+    }
+  ],
+  "qti": {
+    "imsmanifest.xml": "9b1ece7392505bcfb76d17f466370e738c08d8e37ec208565a8a4a123a940841",
+    "qti21/question_bank00001.xml": "528d5b3e0ddf8f8e285ed6be56bc911c5112a9cfd227f3e2d4ea248198ac8e0d",
+    "qti21/assessmentItem00001.xml": "83fbd3c64de5ae64e94aa7917a0acaab27c454e12a657c235903bcf38aab829f",
+    "qti21/assessmentItem00002.xml": "8d27efd4305a9197429333788f2f1aaca20bcf28f9763e71addb614134d9c33a",
+    "qti21/assessmentItem00003.xml": "a9839cc93b0eb589ef5ae48a67b115e274f8316d210859091d9dcf3d66d410e4",
+    "qti21/assessmentItem00004.xml": "f444fdfb68bf6d9d7782753b948fd87e3061d884aea21796760ba8cab707355f"
+  }
+}

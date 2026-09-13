@@ -1,0 +1,6 @@
+node_modules/
+tmp/
+.sites-runtime/
+.env
+.env.*
+!.env.example

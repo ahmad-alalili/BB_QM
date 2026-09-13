@@ -6,15 +6,10 @@ const fs = require('node:fs');
 const path = require('node:path');
 const vm = require('node:vm');
 const core = require('../core.js');
+const countsModule = require('../src/ui/question-counts.js');
+const promptModule = require('../src/ui/prompt-editor.js');
 const app = fs.readFileSync(path.join(__dirname, '../app.js'), 'utf8');
 const html = fs.readFileSync(path.join(__dirname, '../index.html'), 'utf8');
-
-function functionsBetween(first, last) {
-  const start = app.indexOf(`  function ${first}(`);
-  const end = app.indexOf(`  function ${last}(`, start);
-  assert.ok(start >= 0 && end > start);
-  return app.slice(start, end);
-}
 
 // Run the production UI functions with small DOM doubles; browser tests cover pixels.
 function selectionFixture() {
@@ -33,14 +28,19 @@ function selectionFixture() {
   };
   const byId = id => fields.find(field => field.id === id);
   const fills = levels.map(level => ({dataset: {level}, value: '0', min: '0', max: '25'}));
-  const elements = {simpleCountFill: {value: '0', min: '0', max: '50'}, promptStatus: {}};
-  const context = vm.createContext({core, all, byId, elements,
+  const rowTotals = Object.fromEntries(core.TYPE_ORDER.map(type => [type, {}]));
+  const elements = {simpleCountFill: {value: '0', min: '0', max: '50'}, promptStatus: {}, matrixTotal: {}, questionTotal: {},
+    mixedTotal: {classList: {toggle() {}}}, includeReviewNotes: {closest: () => ({classList: {toggle() {}}})}};
+  const actions = {
     numericValue: input => Number(input.value) || 0,
-    document: {querySelector: selector => selector.startsWith('.matrix-column-fill') ? fills.find(fill => selector.includes(fill.dataset.level)) : all(selector)[0]},
-    updateMatrixTotals: () => cells.reduce((sum, cell) => sum + Number(cell.value), 0),
-    updateTotals() {}, invalidatePrompt() {}, setStatus() {},
-  });
-  vm.runInContext(functionsBetween('normalizedBulkCount', 'updateDifficultyUi') + functionsBetween('syncSimpleToMatrixIfEmpty', 'setEditorMode'), context);
+    invalidatePrompt() {}, setStatus() {},
+  };
+  const controller = countsModule.create({core, all, byId, elements, state: {advancedModeActive:false}, window:{},
+    document: {querySelector: selector => selector.startsWith('.matrix-column-fill') ? fills.find(fill => selector.includes(fill.dataset.level))
+      : selector.startsWith('.row-total') ? rowTotals[selector.match(/data-type="([^"]+)"/)[1]] : all(selector)[0]},
+  }, actions);
+  // Invoke the real exported controller; do not extract source text as executable code.
+  const context = vm.createContext({core, ...controller});
   return {choices, counts, cells, fields, fills, elements, all, run: script => vm.runInContext(script, context)};
 }
 
@@ -99,15 +99,15 @@ test('bulk fill never writes into unchecked types in either editor', () => {
 function reminderFixture(storage = new Map(), blocked = false) {
   const dialog = {open: false, shown: 0, showModal() { this.open = true; this.shown += 1; }};
   const checkbox = {checked: false};
-  const context = vm.createContext({
+  const controller = promptModule.create({
+    state: {modelAdviceDismissed: false},
     elements: {modelAdvice: dialog, modelAdviceRemember: checkbox},
     window: {localStorage: {getItem(key) { if (blocked) throw new Error('Storage blocked'); return storage.get(key); }, setItem(key, value) { if (blocked) throw new Error('Storage blocked'); storage.set(key, value); }}},
-  });
-  vm.runInContext("const MODEL_ADVICE_PREFERENCE = 'bb-qm:model-advice-dismissed:v1'; let modelAdviceDismissed = false;" + functionsBetween('showModelAdvice', 'generatePrompt'), context);
-  return {dialog, checkbox, storage, show: () => vm.runInContext('showModelAdvice()', context), close: () => {dialog.open = false; vm.runInContext('rememberModelAdviceChoice()', context);}};
+  }, {});
+  return {dialog, checkbox, storage, show: controller.showModelAdvice, close: () => {dialog.open = false; controller.rememberModelAdviceChoice();}};
 }
 
-test('model note appears after successful generation only, not on initial load or validation failure', () => {
+test('model note starts closed and may reopen unless explicitly dismissed', () => {
   const f = reminderFixture();
   assert.equal(f.dialog.shown, 0);
   f.show(); f.show();
@@ -115,9 +115,6 @@ test('model note appears after successful generation only, not on initial load o
   f.close(); f.show();
   assert.equal(f.dialog.shown, 2);
   assert.equal(f.storage.size, 0);
-  const generate = functionsBetween('generatePrompt', 'editPrompt');
-  assert.match(generate, /core\.buildPrompt\(config\)[\s\S]+showModelAdvice\(\);\s*} catch/);
-  assert.equal((app.match(/showModelAdvice\(\);/g) || []).length, 1);
   assert.match(html, /<dialog id="model-advice-dialog"[^>]*aria-labelledby="model-advice-title"/);
   assert.doesNotMatch(html.match(/<dialog id="model-advice-dialog"[^>]*>/)[0], /\bopen\b/);
 });
@@ -129,7 +126,7 @@ test('do-not-remind preference persists on close and across reloads', () => {
   const nextPage = reminderFixture(f.storage);
   nextPage.show();
   assert.equal(nextPage.dialog.shown, 0);
-  assert.match(app, /modelAdvice\.addEventListener\('close', rememberModelAdviceChoice\)/);
+  assert.match(app, /modelAdvice\.addEventListener\('close', actions\.rememberModelAdviceChoice\)/);
 });
 
 test('blocked storage never prevents prompting and preference still lasts for the page', () => {

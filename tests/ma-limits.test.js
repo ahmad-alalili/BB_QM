@@ -2,24 +2,17 @@
 
 const test = require('node:test');
 const assert = require('node:assert/strict');
-const fs = require('node:fs');
-const path = require('node:path');
-const vm = require('node:vm');
 const core = require('../core.js');
+const partialCredit = require('../src/ui/partial-credit.js');
 
 function uiLimits(choiceCount = 4, correctCount = 2) {
-  const app = fs.readFileSync(path.join(__dirname, '../app.js'), 'utf8');
-  const start = app.indexOf('  function syncMultipleAnswerLimits() {');
-  const end = app.indexOf('  function creditRowsProfile()', start);
-  assert.ok(start >= 0 && end > start);
   const elements = {
     maChoiceCount: { value: String(choiceCount) },
     maCorrectCount: { value: String(correctCount) },
     maSelectionLimit: { value: '' },
   };
-  const context = vm.createContext({ elements });
-  vm.runInContext(app.slice(start, end), context);
-  return { elements, sync: () => vm.runInContext('syncMultipleAnswerLimits()', context) };
+  const controller = partialCredit.create({elements, window: {}}, {});
+  return { elements, sync: controller.syncMultipleAnswerLimits };
 }
 
 function question(correctCount, partialCredit = false) {

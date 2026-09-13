@@ -1,0 +1,28 @@
+/* A native CSS cursor: no tracking element, mouse listeners, or touch overlay.
+   Keep text editing, disabled controls, and high-contrast system cursors intact. */
+@media (hover: hover) and (pointer: fine) and (forced-colors: none) {
+  :root {
+    --trainer-cursor: url('assets/cursors/trainer-pointer.svg') 16 2;
+  }
+
+  body,
+  dialog::backdrop {
+    cursor: var(--trainer-cursor), auto;
+  }
+
+  :is(a[href], button, label, select, summary, [role="button"],
+      input[type="checkbox"], input[type="radio"], input[type="range"]) {
+    cursor: var(--trainer-cursor), pointer;
+  }
+
+  :is(textarea, input:not([type]), input[type="text"], input[type="number"],
+      input[type="email"], input[type="search"], input[type="url"],
+      input[type="password"], input[type="tel"], [contenteditable="true"]) {
+    cursor: text;
+  }
+
+  :is(button, input, select, textarea):disabled,
+  [aria-disabled="true"] {
+    cursor: not-allowed;
+  }
+}

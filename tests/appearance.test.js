@@ -104,6 +104,8 @@ test('font picker is labelled, ordered and independent from question controls', 
   assert.match(html, /<select id="interface-font" aria-describedby="font-help"/);
   const options = html.match(/<select id="interface-font"[\s\S]*?<\/select>/)[0];
   assert.deepEqual([...options.matchAll(/value="([^"]+)"/g)].map(match => match[1]), [...appearance.FONT_CHOICES]);
+  assert.match(options, /value="cairo" selected>خط المؤسسة للتدريب التقني والمهني<\/option>/);
+  assert.doesNotMatch(options, /القاهرة/);
   assert.match(options, /value="naskh">النسخ — كلاسيكي<\/option>/);
   assert.match(options, /value="ruqaa">الرقعة — أصيل<\/option>/);
   assert.match(html, /<script defer src="appearance.js"><\/script>/);

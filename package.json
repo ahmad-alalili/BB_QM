@@ -4,6 +4,8 @@
   "private": true,
   "description": "أداة محلية لإنشاء وتدقيق وتصدير أسئلة Blackboard",
   "scripts": {
+    "start": "node scripts/serve.cjs",
+    "check": "node scripts/check.cjs",
     "test": "node --test tests/*.test.js"
   },
   "engines": {

@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="32" height="36" viewBox="0 0 32 36">
+  <!-- Upward-pointing version of the supplied mark; click hotspot: 16, 2. -->
+  <path d="M16 2 8.5 27 11.5 34 13 28 16 25 19 28 20.5 34 23.5 27Z"
+        fill="#555555" stroke="#ffffff" stroke-width="1" stroke-linejoin="round"/>
+</svg>
